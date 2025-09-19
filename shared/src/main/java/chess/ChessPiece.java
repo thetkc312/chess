@@ -1,7 +1,6 @@
 package chess;
 
 import java.util.Collection;
-import java.util.HashSet;
 
 /**
  * Represents a single chess piece
@@ -65,6 +64,6 @@ public class ChessPiece {
         };
 
         // Returns a HashSet of the valid ChessMove options
-        return pieceRules.recurseMoves(board, myPosition);
+        return pieceRules.getMoves(board, myPosition);
     }
 }

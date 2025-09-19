@@ -32,6 +32,14 @@ public class ChessPosition {
         return col;
     }
 
+    /**
+     *
+     * @return a ChessPosition object derived from some movement based on this piece's position
+     */
+    public ChessPosition getMovedPosition(int moveRow, int moveCol) {
+        return new ChessPosition(row+moveRow, col+moveCol);
+    }
+
     @Override
     public String toString() {
         return String.format("[%d,%d]", row, col);
