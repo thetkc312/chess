@@ -33,11 +33,18 @@ public class ChessPosition {
     }
 
     /**
-     *
-     * @return a ChessPosition object derived from some movement based on this piece's position
+     * @return a new ChessPosition object derived from some movement based on this piece's position
      */
     public ChessPosition getMovedPosition(int moveRow, int moveCol) {
         return new ChessPosition(row+moveRow, col+moveCol);
+    }
+
+    /**
+     *
+     * @return whether this position is on the board
+     */
+    public boolean isOnBoard() {
+        return !(row < 1 || row > 8 || col < 1 || col > 8);
     }
 
     @Override
