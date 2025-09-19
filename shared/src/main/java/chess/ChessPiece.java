@@ -1,7 +1,7 @@
 package chess;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
 
 /**
  * Represents a single chess piece
@@ -53,11 +53,18 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        // FIXME: Dummy piece move
-        ChessPiece piece = board.getPiece(myPosition);
-        if (piece.getPieceType() == PieceType.BISHOP) {
-            return List.of(new ChessMove(new ChessPosition(5,3), new ChessPosition(1,8), null));
-        }
-        return List.of();
+        // TODO: Implement non-queen move rules
+        ChessPiece myPiece = board.getPiece(myPosition);
+        MoveRules pieceRules = switch (myPiece.getPieceType()) {
+            case QUEEN -> new QueenRules();
+            case ROOK -> new QueenRules();
+            case BISHOP -> new QueenRules();
+            case KING -> new QueenRules();
+            case PAWN -> new QueenRules();
+            case KNIGHT -> new QueenRules();
+        };
+
+        // Returns a HashSet of the valid ChessMove options
+        return pieceRules.recurseMoves(board, myPosition);
     }
 }
