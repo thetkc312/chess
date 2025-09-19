@@ -42,4 +42,10 @@ public class ChessMove {
     public ChessPiece.PieceType getPromotionPiece() {
         return promotionPiece;
     }
+
+    @Override
+    public String toString() {
+        // TODO: Implement toString for case with promotion piece
+        return String.format("%s->%s", startPosition, endPosition);
+    }
 }
