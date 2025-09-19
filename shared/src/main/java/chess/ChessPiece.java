@@ -54,13 +54,14 @@ public class ChessPiece {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         // TODO: Implement non-queen move rules
         ChessPiece myPiece = board.getPiece(myPosition);
+        ChessGame.TeamColor myColor = myPiece.getTeamColor();
         MoveRules pieceRules = switch (myPiece.getPieceType()) {
-            case QUEEN -> new QueenRules();
-            case ROOK -> new QueenRules();
-            case BISHOP -> new QueenRules();
-            case KING -> new QueenRules();
-            case PAWN -> new QueenRules();
-            case KNIGHT -> new QueenRules();
+            case QUEEN -> new QueenRules(myColor);
+            case ROOK -> new QueenRules(myColor);
+            case BISHOP -> new QueenRules(myColor);
+            case KING -> new QueenRules(myColor);
+            case PAWN -> new QueenRules(myColor);
+            case KNIGHT -> new QueenRules(myColor);
         };
 
         // Returns a HashSet of the valid ChessMove options

@@ -11,8 +11,11 @@ public abstract class MoveRules {
 
     private final boolean unlimitedDistance; // True when a piece can move infinitely many times in a direction
 
-    public MoveRules(boolean unlimitedDistance) {
+    private final ChessGame.TeamColor myColor;
+
+    public MoveRules(boolean unlimitedDistance, ChessGame.TeamColor pieceColor) {
         this.unlimitedDistance = unlimitedDistance;
+        this.myColor = pieceColor;
     }
 
     private final HashSet<ChessMove> validMoveSet = new HashSet<>();
@@ -32,57 +35,37 @@ public abstract class MoveRules {
 
     public HashSet<ChessMove> getMoves(ChessBoard board, ChessPosition myPosition){
         // TODO: Implement potentialMove as a class of its own
-        ChessGame.TeamColor myColor = board.getPiece(myPosition).getTeamColor();
         for (int[] potentialMove : potentialMoves(board, myPosition)) {
             ChessPosition targetPosition = myPosition.getMovedPosition(potentialMove[0], potentialMove[1]);
             // Check if the location the piece wants to move to can be moved into
-            if (isValidMove(board, targetPosition, myColor)) {
+            while (isValidMove(board, targetPosition)) {
                 // TODO: Add mechanism for promotion piece checking
                 validMoveSet.add(new ChessMove(myPosition, targetPosition, null));
                 // If the piece can continue moving in a direction, try to recurse
-                if (unlimitedDistance) {
-                    // If the targetPosition is an empty position, recurse. Otherwise, it must be taking an enemy piece and forced to stop, and should not recurse.
-                    if (board.getPiece(targetPosition) == null) {
-                        recurseMoves(board, targetPosition, potentialMove, myColor);
-                    }
+                if (!unlimitedDistance) {
+                    break;
+                }
+                // If the targetPosition is an empty position, continue adding moves. Otherwise, it must be taking an enemy piece and forced to stop, and should not recurse.
+                if (board.getPiece(targetPosition) == null) {
+                    targetPosition = targetPosition.getMovedPosition(potentialMove[0], potentialMove[1]);
+                }
+                else {
+                    break;
                 }
             }
 
         }
         return validMoveSet;
-    };
-
-    /**
-     * This recursive function is called to allow a piece with unlimitedDistance
-     * to continue moving in a direction after it has started travelling
-     *
-     * @param board in its current state
-     * @param latestPosition of the piece of interest
-     * @param lastMove made by the piece of interest
-     * @param myColor for the piece of interest
-     */
-    // TODO: Integrate implementation of potentialMove class for lastMove
-    private void recurseMoves(ChessBoard board, ChessPosition latestPosition, int[] lastMove, ChessGame.TeamColor myColor) {
-        ChessPosition targetPosition = latestPosition.getMovedPosition(lastMove[0], lastMove[1]);
-        if (isValidMove(board, targetPosition, myColor)) {
-            // TODO: Add mechanism for promotion piece checking
-            validMoveSet.add(new ChessMove(latestPosition, targetPosition, null));
-            // If the targetPosition was an empty position, recurse. Otherwise, it must be taking an enemy piece and should stop recursion.
-            if (board.getPiece(targetPosition) == null) {
-                recurseMoves(board, targetPosition, lastMove, myColor);
-            }
-        }
     }
 
     /**
      * For a piece in myPosition trying to move to targetPosition, determine whether such a move would be valid
      *
      * @param board in its current state
-     * @param myColor for the piece that is moving
      * @param targetPosition where this piece wants to move
      * @return a boolean indicating whether this is a valid move option
      */
-    private boolean isValidMove(ChessBoard board, ChessPosition targetPosition, ChessGame.TeamColor myColor) {
+    private boolean isValidMove(ChessBoard board, ChessPosition targetPosition) {
         // If the piece wants to move off the board, return false
         if (!targetPosition.isOnBoard()) {
             return false;
