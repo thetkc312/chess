@@ -11,7 +11,7 @@ public abstract class MoveRules {
 
     private final boolean unlimitedDistance; // True when a piece can move infinitely many times in a direction
 
-    private final ChessGame.TeamColor myColor;
+    protected final ChessGame.TeamColor myColor;
 
     public MoveRules(boolean unlimitedDistance, ChessGame.TeamColor pieceColor) {
         this.unlimitedDistance = unlimitedDistance;
@@ -26,14 +26,14 @@ public abstract class MoveRules {
      * can capture, a king in position to perform a castle), but ignoring any obstacles to moves
      * (i.e. would put the piece off the board, would collide with friendly pieces)
      *
-     * @param board in its current state
+     * @param board      in its current state
      * @param myPosition where this piece is located
-     * // TODO: Implement potentialMove as a class of its own
+     *                   // TODO: Implement potentialMove as a class of its own
      * @return a HashSet of 2-deep integer arrays encoding potential directions this piece could move
      */
     protected abstract HashSet<int[]> potentialMoves(ChessBoard board, ChessPosition myPosition); // A hash set of int arrays of format [row, col] where each [row, col] pair indicates a potential move direction of a piece
 
-    public HashSet<ChessMove> getMoves(ChessBoard board, ChessPosition myPosition){
+    public HashSet<ChessMove> getMoves(ChessBoard board, ChessPosition myPosition) {
         // TODO: Implement potentialMove as a class of its own
         for (int[] potentialMove : potentialMoves(board, myPosition)) {
             ChessPosition targetPosition = myPosition.getMovedPosition(potentialMove[0], potentialMove[1]);
@@ -48,8 +48,7 @@ public abstract class MoveRules {
                 // If the targetPosition is an empty position, continue adding moves. Otherwise, it must be taking an enemy piece and forced to stop, and should not recurse.
                 if (board.getPiece(targetPosition) == null) {
                     targetPosition = targetPosition.getMovedPosition(potentialMove[0], potentialMove[1]);
-                }
-                else {
+                } else {
                     break;
                 }
             }
@@ -61,7 +60,7 @@ public abstract class MoveRules {
     /**
      * For a piece in myPosition trying to move to targetPosition, determine whether such a move would be valid
      *
-     * @param board in its current state
+     * @param board          in its current state
      * @param targetPosition where this piece wants to move
      * @return a boolean indicating whether this is a valid move option
      */
