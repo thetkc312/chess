@@ -8,6 +8,8 @@ public class QueenRules extends MoveRules {
         // Tells the parent abstract class whether the piece can move infinitely (recursively) after it starts moving
         super(true, pieceColor);
     }
+
+    // None of the queen's potential moves are influenced by the board state
     protected HashSet<int[]> potentialMoves(ChessBoard board, ChessPosition myPosition) {
         HashSet<int[]> queenMoves = new HashSet<>(8);
         queenMoves.add(new int[]{-1, -1});
