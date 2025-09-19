@@ -58,10 +58,10 @@ public class ChessPiece {
         ChessGame.TeamColor myColor = myPiece.getTeamColor();
         MoveRules pieceRules = switch (myPiece.getPieceType()) {
             case QUEEN -> new QueenRules(myColor);
-            case ROOK -> new QueenRules(myColor);
-            case BISHOP -> new QueenRules(myColor);
-            case KING -> new QueenRules(myColor);
-            case PAWN -> new QueenRules(myColor);
+            case ROOK -> new RookRules(myColor);
+            case BISHOP -> new BishopRules(myColor);
+            case KING -> new KingRules(myColor);
+            case PAWN -> new PawnRules(myColor);
             case KNIGHT -> new QueenRules(myColor);
         };
 
