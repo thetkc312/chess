@@ -62,7 +62,7 @@ public class ChessPiece {
             case BISHOP -> new BishopRules(myColor);
             case KING -> new KingRules(myColor);
             case PAWN -> new PawnRules(myColor);
-            case KNIGHT -> new QueenRules(myColor);
+            case KNIGHT -> new KnightRules(myColor);
         };
 
         // Returns a HashSet of the valid ChessMove options
