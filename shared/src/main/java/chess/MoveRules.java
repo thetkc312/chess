@@ -37,6 +37,9 @@ public abstract class MoveRules {
         // TODO: Implement potentialMove as a class of its own
         for (int[] potentialMove : potentialMoves(board, myPosition)) {
             ChessPosition targetPosition = myPosition.getMovedPosition(potentialMove[0], potentialMove[1]);
+            if (!targetPosition.isOnBoard()) {
+                continue;
+            }
             // Check if the location the piece wants to move to can be moved into
             while (isValidMove(board, targetPosition)) {
                 // TODO: Add mechanism for promotion piece checking
