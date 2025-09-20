@@ -19,6 +19,27 @@ public class ChessPiece {
         this.type = type;
     }
 
+    public ChessPiece(Character charPiece) {
+        String charPiecePossibilities = "qrbkpnQRBKPN";
+        if (!charPiecePossibilities.contains(String.valueOf(charPiece))) {
+            pieceColor = null;
+        } else if (Character.isUpperCase(charPiece)) {
+            pieceColor = ChessGame.TeamColor.WHITE;
+            charPiece = Character.toLowerCase(charPiece);
+        } else {
+            pieceColor = ChessGame.TeamColor.BLACK;
+        }
+        type = switch (charPiece) {
+            case 'q' -> PieceType.QUEEN;
+            case 'r' -> PieceType.ROOK;
+            case 'b' -> PieceType.BISHOP;
+            case 'k' -> PieceType.KING;
+            case 'p' -> PieceType.PAWN;
+            case 'n' -> PieceType.KNIGHT;
+            default -> null;
+        };
+    }
+
     /**
      * The various different chess piece options
      */
@@ -67,6 +88,22 @@ public class ChessPiece {
 
         // Returns a HashSet of the valid ChessMove options
         return pieceRules.getMoves(board, myPosition);
+    }
+
+    public Character toChar() {
+        Character charPiece = switch (type) {
+            case QUEEN -> 'q';
+            case ROOK -> 'r';
+            case BISHOP -> 'b';
+            case KING -> 'k';
+            case PAWN -> 'p';
+            case KNIGHT -> 'n';
+        };
+        if (pieceColor == ChessGame.TeamColor.WHITE) {
+            return Character.toUpperCase(charPiece);
+        } else {
+            return charPiece;
+        }
     }
 
     @Override
