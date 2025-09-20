@@ -6,7 +6,7 @@ public class PawnRules extends MoveRules {
 
     public PawnRules(ChessGame.TeamColor pieceColor) {
         // Tells the parent abstract class whether the piece can move infinitely (recursively) after it starts moving
-        super(true, pieceColor);
+        super(false, pieceColor);
     }
 
     /**
@@ -27,6 +27,7 @@ public class PawnRules extends MoveRules {
         HashSet<int[]> pawnMoves = new HashSet<>(8);
         int direction;
         int startingRow;
+
         // If the pawn is white, it moves in the positive direction through rows
         if (myColor == ChessGame.TeamColor.WHITE) {
             direction = 1;
@@ -37,18 +38,20 @@ public class PawnRules extends MoveRules {
             direction = -1;
             startingRow = 7;
         }
+
+        // Checking if the pawn can move forward at all
         // If the space in front of the pawn is on the board and empty, it is a potential move location
-        ChessPosition oneForwardPosition = myPosition.getMovedPosition(direction, 0);
-        if (oneForwardPosition.isOnBoard()) {
-            if (board.getPiece(oneForwardPosition) == null) {
+        ChessPosition candidatePosition = myPosition.getMovedPosition(direction, 0);
+        if (candidatePosition.isOnBoard()) {
+            if (board.getPiece(candidatePosition) == null) {
                 pawnMoves.add(new int[]{direction, 0});
                 // If the pawn is still in its starting row, it might be able to move twice
                 if (myPosition.getRow() == startingRow) {
                     // If the space two in front of the pawn is also on the board and empty, it is a potential move location
-                    ChessPosition twoForwardPosition = myPosition.getMovedPosition(2 * direction, 0);
-                    if (twoForwardPosition.isOnBoard()) {
-                        if (board.getPiece(twoForwardPosition) == null) {
-                            pawnMoves.add(new int[]{2 * direction, 0});
+                    candidatePosition = myPosition.getMovedPosition(direction+direction, 0);
+                    if (candidatePosition.isOnBoard()) {
+                        if (board.getPiece(candidatePosition) == null) {
+                            pawnMoves.add(new int[]{direction+direction, 0});
                         }
                     }
                 }
@@ -56,7 +59,17 @@ public class PawnRules extends MoveRules {
         }
 
         // TODO: Add potential moves for capturing pieces, and for en passe capture
-        // If there is a piece to a diagonal of the pawn, it can move into its space
+        // If there is an opponent's piece to a diagonal of the pawn, it can move into its space
+        for (int leftRight : new int[]{-1, 1}) {
+            candidatePosition = myPosition.getMovedPosition(direction, leftRight);
+            if (candidatePosition.isOnBoard()) {
+                ChessPiece diagonalPiece = board.getPiece(candidatePosition);
+                if (diagonalPiece != null && diagonalPiece.getTeamColor() != myColor) {
+                    pawnMoves.add(new int[]{direction, leftRight});
+                }
+            }
+        }
+
         return pawnMoves;
     }
 }

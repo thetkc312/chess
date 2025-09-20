@@ -42,8 +42,15 @@ public abstract class MoveRules {
             }
             // Check if the location the piece wants to move to can be moved into
             while (isValidMove(board, targetPosition)) {
-                // TODO: Add mechanism for promotion piece checking
-                validMoveSet.add(new ChessMove(myPosition, targetPosition, null));
+                // If the piece is a pawn and moving into the uppermost or lowermost row, it must be promoted
+                if (board.getPiece(myPosition).getPieceType() == ChessPiece.PieceType.PAWN && (targetPosition.getRow() == 1 || targetPosition.getRow() == 8)) {
+                    for (ChessPiece.PieceType promotionCandidate : new ChessPiece.PieceType[]{ChessPiece.PieceType.QUEEN, ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.KNIGHT, ChessPiece.PieceType.ROOK}) {
+                        validMoveSet.add(new ChessMove(myPosition, targetPosition, promotionCandidate));
+                    }
+                }
+                else {
+                    validMoveSet.add(new ChessMove(myPosition, targetPosition, null));
+                }
                 // If the piece can continue moving in a direction, try to recurse
                 if (!unlimitedDistance) {
                     break;
