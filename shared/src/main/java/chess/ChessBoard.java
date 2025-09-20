@@ -54,7 +54,7 @@ public class ChessBoard {
         for (int rowPos = 8; rowPos >= 1; rowPos--, stringPos++) {
             for (int colPos = 1; colPos <= 8; colPos++, stringPos++) {
                 boardSquares[rowPos-1][colPos-1] = null;
-                ChessPiece pieceFromChar = new ChessPiece(defaultBoard.charAt(stringPos));
+                ChessPiece pieceFromChar = ChessPiece.fromLetter(defaultBoard.charAt(stringPos));
                 if (pieceFromChar != null) {
                     addPiece(new ChessPosition(rowPos, colPos), pieceFromChar);
                 }

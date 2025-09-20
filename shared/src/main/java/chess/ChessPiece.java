@@ -19,15 +19,17 @@ public class ChessPiece {
         this.type = type;
     }
 
-    public ChessPiece(Character charPiece) {
+    public static ChessPiece fromLetter(Character charPiece) {
         String charPiecePossibilities = "qrbkpnQRBKPN";
+        ChessGame.TeamColor myColor;
+        PieceType type;
         if (!charPiecePossibilities.contains(String.valueOf(charPiece))) {
-            pieceColor = null;
+            return null;
         } else if (Character.isUpperCase(charPiece)) {
-            pieceColor = ChessGame.TeamColor.WHITE;
+            myColor = ChessGame.TeamColor.WHITE;
             charPiece = Character.toLowerCase(charPiece);
         } else {
-            pieceColor = ChessGame.TeamColor.BLACK;
+            myColor = ChessGame.TeamColor.BLACK;
         }
         type = switch (charPiece) {
             case 'q' -> PieceType.QUEEN;
@@ -38,6 +40,8 @@ public class ChessPiece {
             case 'n' -> PieceType.KNIGHT;
             default -> null;
         };
+
+        return new ChessPiece(myColor, type);
     }
 
     /**
