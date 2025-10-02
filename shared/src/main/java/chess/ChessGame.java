@@ -52,7 +52,13 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        if (startPosition.isOnBoard()) {
+            ChessPiece movePiece = activeBoard.getPiece(startPosition);
+            if (movePiece != null) {
+                return movePiece.pieceMoves(activeBoard, startPosition);
+            }
+        }
+        return null;
     }
 
     /**
@@ -62,7 +68,32 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        ChessPosition startPosition = move.getStartPosition();
+        Collection<ChessMove> hypotheticalMoves = validMoves(startPosition);
+        // hypotheticalMoves will only be null if the starting position was off the board or empty
+        if (hypotheticalMoves == null) {
+            // Check why hypotheticalMoves is null
+            if (!startPosition.isOnBoard()) {
+                throw new InvalidMoveException("Provided ChessMove object has a starting position that is off the board.");
+            } else {
+                throw new InvalidMoveException("Provided ChessMove object has a starting position where there is no piece.");
+            }
+        }
+        // Check if the desired move is among the hypothetically possible moves
+        if (!hypotheticalMoves.contains(move))
+            throw new InvalidMoveException("Provided ChessMove object does not represent a valid move for this piece in this board-state.");
+        // TODO: Check if the desired move would put the King in check, or if the King is currently in check and this move does not address that
+
+        // Logic for moving a chess piece on the board when it is known that the move is valid
+        ChessPiece movingPiece = activeBoard.getPiece(startPosition).deepCopy();
+        activeBoard.addPiece(startPosition, null);
+        // Since this logic is only reached if the move is among the hypotheticalMoves (which must be valid), we don't need to check if the endPosition is valid.
+        activeBoard.addPiece(move.getEndPosition(), movingPiece);
+        if (activeTeam == TeamColor.WHITE) {
+            activeTeam = TeamColor.BLACK;
+        } else {
+            activeTeam = TeamColor.WHITE;
+        }
     }
 
     /**
@@ -102,7 +133,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        throw new RuntimeException("Not implemented");
+        activeBoard = board;
     }
 
     /**
