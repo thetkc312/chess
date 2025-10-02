@@ -111,6 +111,10 @@ public class ChessPiece {
         }
     }
 
+    public ChessPiece deepCopy() {
+        return new ChessPiece(pieceColor, type);
+    }
+
     @Override
     public String toString() {
         return String.format("%s[%s]", type, pieceColor);
