@@ -69,7 +69,8 @@ public class ChessBoard {
             int rowPos = 8 - lastFoundPos / 9;
             int colPos = lastFoundPos % 9 + 1;
             piecesOfInterest.add(new ChessPosition(rowPos, colPos));
-            boardString = boardString.substring(lastFoundPos+=1);
+            lastFoundPos += 1;
+            boardString = boardString.substring(locatedCharPos+1);
             locatedCharPos = boardString.indexOf(pieceChar);
         }
         // If the corresponding piece could not be found, -1 is returned
