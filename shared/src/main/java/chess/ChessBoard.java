@@ -63,7 +63,7 @@ public class ChessBoard {
             return null;
         } else {
             int rowPos = 8 - locatedCharPos / 9;
-            int colPos = locatedCharPos % 9;
+            int colPos = locatedCharPos % 9 + 1;
             return new ChessPosition(rowPos, colPos);
         }
     }
