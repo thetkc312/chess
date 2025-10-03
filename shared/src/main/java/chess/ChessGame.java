@@ -58,7 +58,17 @@ public class ChessGame {
         if (startPosition.isOnBoard()) {
             ChessPiece movePiece = activeBoard.getPiece(startPosition);
             if (movePiece != null) {
-                return movePiece.pieceMoves(activeBoard, startPosition);
+                Collection<ChessMove> legalValidMoves = new HashSet<>();
+                for (ChessMove movementValidMove : movePiece.pieceMoves(activeBoard, startPosition)) {
+                    // Confirm that the desired move does not end with the King in check
+                    ChessBoard hypotheticalBoard = activeBoard.deepCopy();
+                    applyMove(hypotheticalBoard, movementValidMove);
+                    ChessPosition kingPosition = hypotheticalBoard.findPiece(new ChessPiece(movePiece.getTeamColor(), ChessPiece.PieceType.KING)).iterator().next();
+                    // If this move results in a hypotheticalBoard where there are no ways that the moving team's King is in check, add it to the legalValidMove set
+                    if (reverseSearchCheckAll(hypotheticalBoard, kingPosition, movePiece.getTeamColor()).isEmpty())
+                        legalValidMoves.add(movementValidMove);
+                }
+                return legalValidMoves;
             }
         }
         return null;
@@ -72,32 +82,26 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPosition startPosition = move.getStartPosition();
-        Collection<ChessMove> hypotheticalMoves = validMoves(startPosition);
-        // hypotheticalMoves will only be null if the starting position was off the board or empty
-        if (hypotheticalMoves == null) {
-            // Check why hypotheticalMoves is null
-            if (!startPosition.isOnBoard()) {
-                throw new InvalidMoveException("Provided ChessMove object has a starting position that is off the board.");
-            } else {
-                throw new InvalidMoveException("Provided ChessMove object has a starting position where there is no piece.");
-            }
+
+        // Verify that the starting position is on the board
+        if (!startPosition.isOnBoard()) {
+            throw new InvalidMoveException("Provided ChessMove object has a starting position that is off the board.");
         }
-        // Check if the desired move would move a piece from the enemy team
+
+        // Check if the desired move would move a piece from the team that is not active (out of turn move)
         if (activeTeam != activeBoard.getPiece(startPosition).getTeamColor()) {
             throw new InvalidMoveException("Provided ChessMove object would move a piece out of turn.");
         }
-        // Check if the desired move is among the hypothetically possible moves
+
+        Collection<ChessMove> hypotheticalMoves = validMoves(startPosition);
+        // hypotheticalMoves will only be null if the starting position was empty
+        if (hypotheticalMoves == null) {
+            throw new InvalidMoveException("Provided ChessMove object has a starting position where there is no piece.");
+        }
+
+        // Verify that the desired move is among the hypothetically possible moves
         if (!hypotheticalMoves.contains(move))
             throw new InvalidMoveException("Provided ChessMove object does not represent a valid move for this piece in this board-state.");
-        // TODO: Check if the desired move would put the King in check
-        /*
-        ChessBoard hypotheticalBoard = activeBoard.deepCopy();
-        applyMove(hypotheticalBoard, move);
-        ChessPosition kingPosition = hypotheticalBoard.findPiece(new ChessPiece(activeTeam, ChessPiece.PieceType.KING));
-        if (reverseSearchCheckAll(hypotheticalBoard, kingPosition, activeTeam))
-            throw new InvalidMoveException("Provided ChessMove object is a possible move, but would leave the king in check");
-         */
-        // TODO: Check if the King is currently in check and this move does not address that
 
         // Logic for moving a chess piece on the board when it is known that the move is valid
         applyMove(activeBoard, move);
