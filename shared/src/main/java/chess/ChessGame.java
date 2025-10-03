@@ -1,6 +1,5 @@
 package chess;
 
-import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -89,6 +88,13 @@ public class ChessGame {
         if (!hypotheticalMoves.contains(move))
             throw new InvalidMoveException("Provided ChessMove object does not represent a valid move for this piece in this board-state.");
         // TODO: Check if the desired move would put the King in check
+        /*
+        ChessBoard hypotheticalBoard = activeBoard.deepCopy();
+        applyMove(hypotheticalBoard, move);
+        ChessPosition kingPosition = hypotheticalBoard.findPiece(new ChessPiece(activeTeam, ChessPiece.PieceType.KING));
+        if (reverseSearchCheckAll(hypotheticalBoard, kingPosition, activeTeam))
+            throw new InvalidMoveException("Provided ChessMove object is a possible move, but would leave the king in check");
+         */
         // TODO: Check if the King is currently in check and this move does not address that
 
         // Logic for moving a chess piece on the board when it is known that the move is valid
@@ -124,24 +130,31 @@ public class ChessGame {
     public boolean isInCheck(TeamColor teamColor) {
         ChessPiece targetKing = new ChessPiece(teamColor, ChessPiece.PieceType.KING);
         ChessPosition kingPosition = activeBoard.findPiece(targetKing);
-        return (reverseSearchCheck(kingPosition, teamColor, ChessPiece.PieceType.QUEEN) ||
-                reverseSearchCheck(kingPosition, teamColor, ChessPiece.PieceType.ROOK) ||
-                reverseSearchCheck(kingPosition, teamColor, ChessPiece.PieceType.BISHOP) ||
-                reverseSearchCheck(kingPosition, teamColor, ChessPiece.PieceType.KNIGHT) ||
-                reverseSearchCheck(kingPosition, teamColor, ChessPiece.PieceType.PAWN) ||
-                reverseSearchCheck(kingPosition, teamColor, ChessPiece.PieceType.KING));
+        ChessBoard hypotheticalBoard = activeBoard.deepCopy();
+        return reverseSearchCheckAll(hypotheticalBoard, kingPosition, teamColor);
     }
 
-    private boolean reverseSearchCheck(ChessPosition kingPosition, TeamColor teamColor, ChessPiece.PieceType checkPieceType) {
+    private boolean reverseSearchCheckAll(ChessBoard hypotheticalBoard, ChessPosition kingPosition, TeamColor teamColor) {
+        return (reverseSearchCheck(hypotheticalBoard.deepCopy(), kingPosition, teamColor, ChessPiece.PieceType.QUEEN) ||
+                reverseSearchCheck(hypotheticalBoard.deepCopy(), kingPosition, teamColor, ChessPiece.PieceType.ROOK) ||
+                reverseSearchCheck(hypotheticalBoard.deepCopy(), kingPosition, teamColor, ChessPiece.PieceType.BISHOP) ||
+                reverseSearchCheck(hypotheticalBoard.deepCopy(), kingPosition, teamColor, ChessPiece.PieceType.KNIGHT) ||
+                reverseSearchCheck(hypotheticalBoard.deepCopy(), kingPosition, teamColor, ChessPiece.PieceType.PAWN) ||
+                reverseSearchCheck(hypotheticalBoard.deepCopy(), kingPosition, teamColor, ChessPiece.PieceType.KING));
+    }
+
+    private boolean reverseSearchCheck(ChessBoard hypotheticalBoard, ChessPosition kingPosition, TeamColor teamColor, ChessPiece.PieceType checkPieceType) {
         // For each piece type, see where a piece of that type could move from the kings position, and check if any of those positions contain enemy pieces of that type
-        ChessBoard hypotheticalBoard = activeBoard.deepCopy();
         Collection<ChessMove> reverseMoves;
-        ChessPiece checkPiece = new ChessPiece(teamColor, checkPieceType);
-        hypotheticalBoard.addPiece(kingPosition, checkPiece);
-        reverseMoves = checkPiece.pieceMoves(hypotheticalBoard, kingPosition);
+        ChessPiece reverseCheckPiece = new ChessPiece(teamColor, checkPieceType);
+        hypotheticalBoard.addPiece(kingPosition, reverseCheckPiece);
+        reverseMoves = reverseCheckPiece.pieceMoves(hypotheticalBoard, kingPosition);
         for (ChessMove reverseMove : reverseMoves) {
-            ChessPosition reverseMoveEnd = reverseMove.getEndPosition();
-            if (activeBoard.getPiece(reverseMoveEnd).getPieceType() == ChessPiece.PieceType.QUEEN) {
+            ChessPosition reverseMoveEndPos = reverseMove.getEndPosition();
+            ChessPiece reverseMoveEndPiece = hypotheticalBoard.getPiece(reverseMoveEndPos);
+            if (reverseMoveEndPiece == null)
+                continue;
+            if (reverseMoveEndPiece.getTeamColor() != teamColor && reverseMoveEndPiece.getPieceType() == checkPieceType) {
                 return true;
             }
         }
