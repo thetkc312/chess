@@ -1,5 +1,7 @@
 package chess;
 
+import org.junit.jupiter.api.extension.ParameterResolutionException;
+
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -14,6 +16,21 @@ public class ChessBoard {
     ChessPiece[][] boardSquares = new ChessPiece[8][8];
 
     public ChessBoard() {    }
+
+    public static ChessBoard fromString(String inputBoardString) {
+        int stringPos = 0;
+        ChessBoard stringBoard = new ChessBoard();
+        for (int rowPos = 8; rowPos >= 1; rowPos--, stringPos++) {
+            for (int colPos = 1; colPos <= 8; colPos++, stringPos++) {
+                ChessPosition boardPos = new ChessPosition(rowPos, colPos);
+                ChessPiece pieceFromChar = ChessPiece.fromLetter(inputBoardString.charAt(stringPos));
+                if (pieceFromChar != null) {
+                    stringBoard.addPiece(boardPos, pieceFromChar);
+                }
+            }
+        }
+        return stringBoard;
+    }
 
     /**
      * Adds a chess piece to the chessboard
@@ -76,6 +93,11 @@ public class ChessBoard {
             boardString.append('\n');
         }
         return boardString.toString();
+    }
+
+    public ChessBoard deepCopy() {
+        String stringVisualization = visualizeBoard();
+        return ChessBoard.fromString(stringVisualization);
     }
 
     @Override
