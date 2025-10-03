@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -142,6 +143,25 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return activeBoard.deepCopy();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("ChessGame{activeTeam: %s, activeBoard:\n%s\n}", activeTeam, activeBoard);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessGame chessGame = (ChessGame) o;
+        return Objects.equals(activeBoard, chessGame.activeBoard) && activeTeam == chessGame.activeTeam;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(activeBoard, activeTeam);
     }
 }
