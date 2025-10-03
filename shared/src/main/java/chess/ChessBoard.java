@@ -3,8 +3,7 @@ package chess;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 
 import java.awt.*;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -54,18 +53,27 @@ public class ChessBoard {
         return boardSquares[position.getRow() - 1][position.getColumn() - 1];
     }
 
-    public ChessPosition findPiece(ChessPiece pieceOfInterest) {
+    // TODO: Make this a generator to find all pieces of a type
+    public Collection<ChessPosition> findPiece(ChessPiece pieceOfInterest) {
+        HashSet<ChessPosition> piecesOfInterest = new HashSet<>(10);
+        // Represent the board as a string
         String boardString = this.visualizeBoard();
         char pieceChar = pieceOfInterest.toChar();
+        // lastFoundPos keeps track of the position in the original boardString for the sake of solving for row and column positions
+        int lastFoundPos = 0;
+        // locatedCharPos finds the index of the first character occurance
         int locatedCharPos = boardString.indexOf(pieceChar);
-        // If the corresponding piece could not be found, -1 is returned
-        if (locatedCharPos < 0) {
-            return null;
-        } else {
-            int rowPos = 8 - locatedCharPos / 9;
-            int colPos = locatedCharPos % 9 + 1;
-            return new ChessPosition(rowPos, colPos);
+        // If the character representing the piece of interest can still be found on the board, add it and keep looking
+        while (locatedCharPos > 0) {
+            lastFoundPos = lastFoundPos + locatedCharPos;
+            int rowPos = 8 - lastFoundPos / 9;
+            int colPos = lastFoundPos % 9 + 1;
+            piecesOfInterest.add(new ChessPosition(rowPos, colPos));
+            boardString = boardString.substring(lastFoundPos);
+            locatedCharPos = boardString.indexOf(pieceChar);
         }
+        // If the corresponding piece could not be found, -1 is returned
+        return piecesOfInterest;
     }
 
     /**
