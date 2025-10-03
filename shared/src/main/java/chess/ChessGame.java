@@ -80,13 +80,22 @@ public class ChessGame {
                 throw new InvalidMoveException("Provided ChessMove object has a starting position where there is no piece.");
             }
         }
+        // Check if the desired move would move a piece from the enemy team
+        if (activeTeam != activeBoard.getPiece(startPosition).getTeamColor()) {
+            throw new InvalidMoveException("Provided ChessMove object would move a piece out of turn.");
+        }
         // Check if the desired move is among the hypothetically possible moves
         if (!hypotheticalMoves.contains(move))
             throw new InvalidMoveException("Provided ChessMove object does not represent a valid move for this piece in this board-state.");
         // TODO: Check if the desired move would put the King in check, or if the King is currently in check and this move does not address that
 
         // Logic for moving a chess piece on the board when it is known that the move is valid
-        ChessPiece movingPiece = activeBoard.getPiece(startPosition).deepCopy();
+        ChessPiece movingPiece = activeBoard.getPiece(startPosition);
+        if (move.getPromotionPiece() == null) {
+            movingPiece = new ChessPiece(movingPiece.getTeamColor(), movingPiece.getPieceType());
+        } else {
+            movingPiece = new ChessPiece(movingPiece.getTeamColor(), move.getPromotionPiece());
+        }
         activeBoard.addPiece(startPosition, null);
         // Since this logic is only reached if the move is among the hypotheticalMoves (which must be valid), we don't need to check if the endPosition is valid.
         activeBoard.addPiece(move.getEndPosition(), movingPiece);
