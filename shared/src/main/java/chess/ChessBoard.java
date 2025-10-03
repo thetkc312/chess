@@ -64,12 +64,12 @@ public class ChessBoard {
         // locatedCharPos finds the index of the first character occurance
         int locatedCharPos = boardString.indexOf(pieceChar);
         // If the character representing the piece of interest can still be found on the board, add it and keep looking
-        while (locatedCharPos > 0) {
+        while (locatedCharPos >= 0) {
             lastFoundPos = lastFoundPos + locatedCharPos;
             int rowPos = 8 - lastFoundPos / 9;
             int colPos = lastFoundPos % 9 + 1;
             piecesOfInterest.add(new ChessPosition(rowPos, colPos));
-            boardString = boardString.substring(lastFoundPos);
+            boardString = boardString.substring(lastFoundPos+1);
             locatedCharPos = boardString.indexOf(pieceChar);
         }
         // If the corresponding piece could not be found, -1 is returned
