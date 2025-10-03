@@ -2,6 +2,7 @@ package chess;
 
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 
+import java.awt.*;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -51,6 +52,20 @@ public class ChessBoard {
      */
     public ChessPiece getPiece(ChessPosition position) {
         return boardSquares[position.getRow() - 1][position.getColumn() - 1];
+    }
+
+    public ChessPosition findPiece(ChessPiece pieceOfInterest) {
+        String boardString = this.visualizeBoard();
+        char pieceChar = pieceOfInterest.toChar();
+        int locatedCharPos = boardString.indexOf(pieceChar);
+        // If the corresponding piece could not be found, -1 is returned
+        if (locatedCharPos < 0) {
+            return null;
+        } else {
+            int rowPos = 8 - locatedCharPos / 9;
+            int colPos = locatedCharPos % 9;
+            return new ChessPosition(rowPos, colPos);
+        }
     }
 
     /**
