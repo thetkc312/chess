@@ -136,12 +136,11 @@ public class ChessGame {
     public boolean isInCheck(TeamColor teamColor) {
         ChessPiece targetKing = new ChessPiece(teamColor, ChessPiece.PieceType.KING);
         ChessPosition kingPosition = activeBoard.findPiece(targetKing).iterator().next();
-        ChessBoard hypotheticalBoard = activeBoard.deepCopy();
         // If the HashSet of moves causing check is not empty, then the piece is in check
-        return (!reverseSearchCheckAll(hypotheticalBoard, kingPosition, teamColor).isEmpty());
+        return (!reverseSearchCheckAll(activeBoard, kingPosition, teamColor).isEmpty());
     }
 
-    private Collection<ChessMove> reverseSearchCheckAll(ChessBoard hypotheticalBoard, ChessPosition kingPosition, TeamColor teamColor) {
+    private HashSet<ChessMove> reverseSearchCheckAll(ChessBoard hypotheticalBoard, ChessPosition kingPosition, TeamColor teamColor) {
         HashSet<ChessMove> movesCausingCheck = new HashSet<>(0);
         movesCausingCheck.addAll(reverseSearchCheck(hypotheticalBoard.deepCopy(), kingPosition, teamColor, ChessPiece.PieceType.QUEEN, false));
         movesCausingCheck.addAll(reverseSearchCheck(hypotheticalBoard.deepCopy(), kingPosition, teamColor, ChessPiece.PieceType.ROOK, false));
@@ -152,7 +151,7 @@ public class ChessGame {
         return movesCausingCheck;
     }
 
-    private Collection<ChessMove> reverseSearchCheck(ChessBoard hypotheticalBoard, ChessPosition kingPosition, TeamColor teamColor, ChessPiece.PieceType checkPieceType, boolean pieceCanJump) {
+    private HashSet<ChessMove> reverseSearchCheck(ChessBoard hypotheticalBoard, ChessPosition kingPosition, TeamColor teamColor, ChessPiece.PieceType checkPieceType, boolean pieceCanJump) {
         // For each piece type, see where a piece of that type could move from the kings position
         HashSet<ChessMove> movesCausingCheck = new HashSet<>(0);
         ChessPiece reverseCheckPiece = new ChessPiece(teamColor, checkPieceType);
@@ -200,10 +199,24 @@ public class ChessGame {
     public boolean isInCheckmate(TeamColor teamColor) {
         // TODO: Implement Checkmate logic
         // First, see if the king of teamColor is in check. If so, save all of the associated reverseSearchCheck moves.
-        // For all pieces of the team in check, see their possible moves.
+        ChessPiece targetKing = new ChessPiece(teamColor, ChessPiece.PieceType.KING);
+        ChessPosition kingPosition = activeBoard.findPiece(targetKing).iterator().next();
+        HashSet<ChessMove> checkingMoves = reverseSearchCheckAll(activeBoard, kingPosition, teamColor);
+        if (checkingMoves.isEmpty())
+            return false;
+        // For all pieces of the team in check...
+        for (ChessPiece.PieceType pieceType : ChessPiece.PieceType.values()) {
+            ChessPiece piece = new ChessPiece(teamColor, pieceType);
+            Collection<ChessPosition> livingPieces = activeBoard.findPiece(piece);
+            for (ChessPosition potentialCheckSavior : livingPieces) {
+                // ... see if there are any validMoves (moves that don't leave the king in Check). If so, the king is not in check.
+                if (!validMoves(potentialCheckSavior).isEmpty())
+                    return false;
+            }
+        }
         // Find the set of these moves whose end positions intersect with the reverseSearchCheck moves.
         // For each of these moves, see if the resulting board removes the isInCheck condition.
-        return false;
+        return true;
     }
 
     /**
