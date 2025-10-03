@@ -1,5 +1,6 @@
 package chess;
 
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -12,7 +13,7 @@ import java.util.Objects;
 public class ChessGame {
 
     private ChessBoard activeBoard;
-    private ChessGame.TeamColor activeTeam;
+    private TeamColor activeTeam;
 
     // Instantiation of a ChessGame object will create and reset a ChessBoard object
     public ChessGame() {
@@ -87,23 +88,31 @@ public class ChessGame {
         // Check if the desired move is among the hypothetically possible moves
         if (!hypotheticalMoves.contains(move))
             throw new InvalidMoveException("Provided ChessMove object does not represent a valid move for this piece in this board-state.");
-        // TODO: Check if the desired move would put the King in check, or if the King is currently in check and this move does not address that
+        // TODO: Check if the desired move would put the King in check
+        // TODO: Check if the King is currently in check and this move does not address that
 
         // Logic for moving a chess piece on the board when it is known that the move is valid
-        ChessPiece movingPiece = activeBoard.getPiece(startPosition);
-        if (move.getPromotionPiece() == null) {
-            movingPiece = new ChessPiece(movingPiece.getTeamColor(), movingPiece.getPieceType());
-        } else {
-            movingPiece = new ChessPiece(movingPiece.getTeamColor(), move.getPromotionPiece());
-        }
-        activeBoard.addPiece(startPosition, null);
-        // Since this logic is only reached if the move is among the hypotheticalMoves (which must be valid), we don't need to check if the endPosition is valid.
-        activeBoard.addPiece(move.getEndPosition(), movingPiece);
+        applyMove(activeBoard, move);
         if (activeTeam == TeamColor.WHITE) {
             activeTeam = TeamColor.BLACK;
         } else {
             activeTeam = TeamColor.WHITE;
         }
+    }
+
+    private void applyMove(ChessBoard someBoard, ChessMove someMove) {
+        ChessPosition startPosition = someMove.getStartPosition();
+        ChessPosition endPosition = someMove.getEndPosition();
+        ChessPiece.PieceType promotionType = someMove.getPromotionPiece();
+        ChessPiece movingPiece = someBoard.getPiece(startPosition);
+        if (promotionType == null) {
+            movingPiece = new ChessPiece(movingPiece.getTeamColor(), movingPiece.getPieceType());
+        } else {
+            movingPiece = new ChessPiece(movingPiece.getTeamColor(), promotionType);
+        }
+        someBoard.addPiece(startPosition, null);
+        // Since this logic is only reached if the move is among the hypotheticalMoves (which must be valid), we don't need to check if the endPosition is valid.
+        someBoard.addPiece(endPosition, movingPiece);
     }
 
     /**
@@ -113,7 +122,30 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece targetKing = new ChessPiece(teamColor, ChessPiece.PieceType.KING);
+        ChessPosition kingPosition = activeBoard.findPiece(targetKing);
+        return (reverseSearchCheck(kingPosition, teamColor, ChessPiece.PieceType.QUEEN) ||
+                reverseSearchCheck(kingPosition, teamColor, ChessPiece.PieceType.ROOK) ||
+                reverseSearchCheck(kingPosition, teamColor, ChessPiece.PieceType.BISHOP) ||
+                reverseSearchCheck(kingPosition, teamColor, ChessPiece.PieceType.KNIGHT) ||
+                reverseSearchCheck(kingPosition, teamColor, ChessPiece.PieceType.PAWN) ||
+                reverseSearchCheck(kingPosition, teamColor, ChessPiece.PieceType.KING));
+    }
+
+    private boolean reverseSearchCheck(ChessPosition kingPosition, TeamColor teamColor, ChessPiece.PieceType checkPieceType) {
+        // For each piece type, see where a piece of that type could move from the kings position, and check if any of those positions contain enemy pieces of that type
+        ChessBoard hypotheticalBoard = activeBoard.deepCopy();
+        Collection<ChessMove> reverseMoves;
+        ChessPiece checkPiece = new ChessPiece(teamColor, checkPieceType);
+        hypotheticalBoard.addPiece(kingPosition, checkPiece);
+        reverseMoves = checkPiece.pieceMoves(hypotheticalBoard, kingPosition);
+        for (ChessMove reverseMove : reverseMoves) {
+            ChessPosition reverseMoveEnd = reverseMove.getEndPosition();
+            if (activeBoard.getPiece(reverseMoveEnd).getPieceType() == ChessPiece.PieceType.QUEEN) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
