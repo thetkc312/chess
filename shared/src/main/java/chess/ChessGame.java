@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
@@ -15,12 +16,14 @@ public class ChessGame {
 
     private ChessBoard activeBoard;
     private TeamColor activeTeam;
+    private ArrayList<ChessMove> moveHistory;
 
     // Instantiation of a ChessGame object will create and reset a ChessBoard object
     public ChessGame() {
         activeBoard = new ChessBoard();
         activeBoard.resetBoard();
         activeTeam = TeamColor.WHITE;
+        moveHistory = new ArrayList<>();
     }
 
     /**
@@ -105,6 +108,7 @@ public class ChessGame {
 
         // Logic for moving a chess piece on the board when it is known that the move is valid
         applyMove(activeBoard, move);
+        moveHistory.add(move);
         if (activeTeam == TeamColor.WHITE) {
             activeTeam = TeamColor.BLACK;
         } else {
