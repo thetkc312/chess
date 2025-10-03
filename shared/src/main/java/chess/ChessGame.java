@@ -197,26 +197,14 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        // TODO: Implement Checkmate logic
         // First, see if the king of teamColor is in check. If so, save all of the associated reverseSearchCheck moves.
         ChessPiece targetKing = new ChessPiece(teamColor, ChessPiece.PieceType.KING);
         ChessPosition kingPosition = activeBoard.findPiece(targetKing).iterator().next();
         HashSet<ChessMove> checkingMoves = reverseSearchCheckAll(activeBoard, kingPosition, teamColor);
         if (checkingMoves.isEmpty())
             return false;
-        // For all pieces of the team in check...
-        for (ChessPiece.PieceType pieceType : ChessPiece.PieceType.values()) {
-            ChessPiece piece = new ChessPiece(teamColor, pieceType);
-            Collection<ChessPosition> livingPieces = activeBoard.findPiece(piece);
-            for (ChessPosition potentialCheckSavior : livingPieces) {
-                // ... see if there are any validMoves (moves that don't leave the king in Check). If so, the king is not in check.
-                if (!validMoves(potentialCheckSavior).isEmpty())
-                    return false;
-            }
-        }
-        // Find the set of these moves whose end positions intersect with the reverseSearchCheck moves.
-        // For each of these moves, see if the resulting board removes the isInCheck condition.
-        return true;
+        // For all pieces of the team in check, see if there are any validMoves (moves that don't leave the king in Check). If there are no valid moves, the king is in Checkmate.
+        return !validMovesExist(activeBoard, teamColor);
     }
 
     /**
@@ -228,6 +216,26 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         // TODO: Implement Stalemate logic
+        // First, see if the king is in check. If so, it cannot be stalemate.
+        if (isInCheck(teamColor))
+            return false;
+        // If there are no valid moves, this is a stalemate.
+        return !validMovesExist(activeBoard, teamColor);
+    }
+
+    private boolean validMovesExist(ChessBoard someBoard, ChessGame.TeamColor someTeam) {
+        // Consider all chess pieces
+        for (ChessPiece.PieceType pieceType : ChessPiece.PieceType.values()) {
+            ChessPiece piece = new ChessPiece(someTeam, pieceType);
+            Collection<ChessPosition> livingPieces = someBoard.findPiece(piece);
+            // If any pieces of that type could be found belonging to this team...
+            for (ChessPosition potentialCheckSavior : livingPieces) {
+                // ... return true if any one among them has a valid move.
+                if (!validMoves(potentialCheckSavior).isEmpty())
+                    return true;
+            }
+        }
+        // If all validMoves generated for this team's pieces are empty, there are no valid moves.
         return false;
     }
 
