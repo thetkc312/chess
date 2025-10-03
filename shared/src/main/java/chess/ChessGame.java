@@ -88,15 +88,15 @@ public class ChessGame {
             throw new InvalidMoveException("Provided ChessMove object has a starting position that is off the board.");
         }
 
-        // Check if the desired move would move a piece from the team that is not active (out of turn move)
-        if (activeTeam != activeBoard.getPiece(startPosition).getTeamColor()) {
-            throw new InvalidMoveException("Provided ChessMove object would move a piece out of turn.");
-        }
-
         Collection<ChessMove> hypotheticalMoves = validMoves(startPosition);
         // hypotheticalMoves will only be null if the starting position was empty
         if (hypotheticalMoves == null) {
             throw new InvalidMoveException("Provided ChessMove object has a starting position where there is no piece.");
+        }
+
+        // Check if the desired move would move a piece from the team that is not active (out of turn move)
+        if (activeTeam != activeBoard.getPiece(startPosition).getTeamColor()) {
+            throw new InvalidMoveException("Provided ChessMove object would move a piece out of turn.");
         }
 
         // Verify that the desired move is among the hypothetically possible moves
