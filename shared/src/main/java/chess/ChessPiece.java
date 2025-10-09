@@ -79,7 +79,6 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        // TODO: Implement non-queen move rules
         ChessPiece myPiece = board.getPiece(myPosition);
         ChessGame.TeamColor myColor = myPiece.getTeamColor();
         MoveRules pieceRules = switch (myPiece.getPieceType()) {

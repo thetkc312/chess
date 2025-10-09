@@ -201,7 +201,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        // First, see if the king of teamColor is in check. If so, save all of the associated reverseSearchCheck moves.
+        // First, see if the king of teamColor is in check. If so, save all the associated reverseSearchCheck moves.
         ChessPiece targetKing = new ChessPiece(teamColor, ChessPiece.PieceType.KING);
         ChessPosition kingPosition = activeBoard.findPiece(targetKing).iterator().next();
         HashSet<ChessMove> checkingMoves = reverseSearchCheckAll(activeBoard, kingPosition, teamColor);
@@ -219,7 +219,6 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        // TODO: Implement Stalemate logic
         // First, see if the king is in check. If so, it cannot be stalemate.
         if (isInCheck(teamColor))
             return false;
