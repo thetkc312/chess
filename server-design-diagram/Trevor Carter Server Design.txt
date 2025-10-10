@@ -1,0 +1,214 @@
+actor Client
+participant Server
+participant Handler
+participant Service
+participant DataAccess
+database db
+
+entryspacing 0.9
+group#43829c #lightblue Registration
+Client -> Server: [POST] /user\n{"username":" ", "password":" ", "email":" "}
+break Server presently unable to read request
+Server --> Client: 500\n{"message": "Error: (description of error)"}
+end
+break Bad Request from client cannot be read by server
+Server --> Client: 400\n{"message": "Error: bad request"}
+end
+Server -> Handler: {"username":" ", "password":" ", "email":" "}
+Handler -> Service: register(RegisterRequest)
+Service -> DataAccess: getUser(username)
+DataAccess -> db:Find UserData by username
+break User with username already exists
+DataAccess --> Service: UserData
+Service --> Server: AlreadyTakenException
+Server --> Client: 403\n{"message": "Error: username already taken"}
+end
+DataAccess --> Service: null
+Service -> DataAccess:createUser(userData)
+DataAccess -> db:Add UserData
+break Unsuccessful db operation
+DataAccess --> Service: db Operation Failed
+Service --> Server: DataAccessException
+Server --> Client: 500\n{"message": "Error: failed server side db operation "}
+end
+DataAccess --> Service: db Operation Success
+Service -> DataAccess:createAuth(authData)
+DataAccess -> db:Add AuthData
+DataAccess --> Service: db Operation Success
+Service --> Handler: RegisterResult
+Handler --> Server: {"username" : " ", "authToken" : " "}
+Server --> Client: 200\n{"username" : " ", "authToken" : " "}
+end
+
+group#orange #FCEDCA Login
+Client -> Server: [POST] /session\n{username, password}
+break Server presently unable to read request
+Server --> Client: 500\n{"message": "Error: (description of error)"}
+end
+break Bad Request from client cannot be read by server
+Server --> Client: 400\n{"message": "Error: bad request"}
+end
+Server -> Handler: {"username":" ", "password":" "}
+Handler -> Service: login(RegisterRequest)
+Service -> DataAccess: getAuth(username)
+DataAccess -> db:Find AuthData by username
+// This implementation blocks any login attempts if an active authentication code exists. The user must log out of their other session before starting a new one. To do this I added capability to return a 403 forbidden error code.
+break User already has an authentication code
+DataAccess --> Service: AuthData
+Service --> Server: DataAccessException
+Server --> Client: 403\n{"message": "Error: user is already logged in elsewhere"}
+end
+DataAccess --> Service: null
+Service -> DataAccess:loginUser(userData)
+DataAccess -> db:Check for UserData
+break Login credentials do not match a known user
+DataAccess --> Service: null
+Service --> Server: DataAccessException
+Server --> Client: 401\n{"message": "Error: unauthorized"}
+end
+DataAccess --> Service:userExists
+Service -> DataAccess:createAuth(authData)
+DataAccess -> db:Add AuthData
+break Unsuccessful db operation
+DataAccess --> Service: db Operation Failed
+Service --> Server: DataAccessException
+Server --> Client: 500\n{"message": "Error: failed server side db operation "}
+end
+DataAccess --> Service: db Operation Success
+Service --> Handler: RegisterResult
+Handler --> Server: {"username" : " ", "authToken" : " "}
+Server --> Client: 200\n{"username" : " ", "authToken" : " "}
+end
+
+group#green #lightgreen Logout
+Client -> Server: [DELETE] /session\nauthToken
+break Server presently unable to read request
+Server --> Client: 500\n{"message": "Error: (description of error)"}
+end
+Server -> Handler: {"authorization" : " "}
+Handler -> Service: delete(RegisterRequest)
+Service -> DataAccess: authExists(username)
+DataAccess -> db:Find authentication token
+break Invalid authentication token
+DataAccess --> Service: null
+Service --> Server: DataAccessException
+Server --> Client: 401\n{ "message": "Error: unauthorized" }
+end
+DataAccess --> Service: authData
+Service -> DataAccess: deleteAuth(username)
+DataAccess -> db:Delete authentication token
+break Unsuccessful db operation
+DataAccess --> Service: db Operation Failed
+Service --> Server: DataAccessException
+Server --> Client: 500\n{"message": "Error: failed server side db operation "}
+end
+DataAccess --> Service: db Operation Success
+Service --> Handler: RegisterResult
+Handler --> Server: {}
+Server --> Client: 200\n{}
+end
+
+//Current Position
+group#red #pink List Games
+Client -> Server: [GET] /game\nauthToken
+break Server presently unable to read request
+Server --> Client: 500\n{"message": "Error: (description of error)"}
+end
+Server -> Handler: {"authorization" : " "}
+Handler -> Service: listGames(RegisterRequest)
+Service -> DataAccess: authExists(username)
+DataAccess -> db:Find authentication token
+break Invalid authentication token
+DataAccess --> Service: null
+Service --> Server: DataAccessException
+Server --> Client: 401\n{ "message": "Error: unauthorized" }
+end
+Service -> DataAccess: getGames()
+DataAccess -> db: Retrieve all games
+DataAccess --> Service: allGames
+Service --> Handler: RegisterResult(allGames)
+Handler --> Server: { ["gameID":int, ... ],  ... }
+Server --> Client: 200\n{ ["gameID":int, ... ],  ... }
+end
+
+group#d790e0 #E3CCE6 Create Game 
+Client -> Server: [POST] /game\nauthToken\n{gameName}
+break Server presently unable to read request
+Server --> Client: 500\n{"message": "Error: (description of error)"}
+end
+break Bad Request from client cannot be read by server
+Server --> Client: 400\n{"message": "Error: bad request"}
+end
+Server -> Handler: {"authorization" : " ", "gameName" : " " }
+Handler -> Service: createGame(RegisterRequest)
+Service -> DataAccess: authExists(username)
+DataAccess -> db:Find authentication token
+break Invalid authentication token
+DataAccess --> Service: null
+Service --> Server: DataAccessException
+Server --> Client: 401\n{ "message": "Error: unauthorized" }
+end
+DataAccess --> Service: authData
+Service -> DataAccess: createGame(username, color)
+DataAccess --> db: Add Game
+break Unsuccessful db operation
+DataAccess --> Service: db Operation Failed
+Service --> Server: DataAccessException
+Server --> Client: 500\n{"message": "Error: failed db server side operation "}
+end
+DataAccess --> Service: db Operation Success
+Service --> Handler: RegisterResult
+Handler --> Server: {}
+Server --> Client: 200\n{}
+end
+
+group#yellow #lightyellow Join Game #black
+Client -> Server: [PUT] /game\nauthToken\n{playerColor, gameID}
+break Server presently unable to read request
+Server --> Client: 500\n{"message": "Error: (description of error)"}
+end
+break Bad Request from client cannot be read by server
+Server --> Client: 400\n{"message": "Error: bad request"}
+end
+Server -> Handler: {"authorization" : " ", "playerColor" : " ", "gameID" : " " }
+Handler -> Service: joinGame(RegisterRequest)
+Service -> DataAccess: authExists(username)
+DataAccess -> db:Find authentication token
+break Invalid authentication token
+DataAccess --> Service: null
+Service --> Server: DataAccessException
+Server --> Client: 401\n{ "message": "Error: unauthorized" }
+end
+DataAccess --> Service: authData
+Service -> DataAccess: findGame(gameID, color)
+DataAccess -> db:Find game
+break Game no longer available
+DataAccess --> Service: null
+Service --> Server: DataAccessException
+Server --> Client: 403\n{ "message": "Error: already taken" }
+end
+DataAccess --> Service: gameData
+Service --> Handler: RegisterResult
+Handler --> Server: {}
+Server --> Client: 200\n{}
+end
+
+group#gray #lightgray Clear application 
+Client -> Server: [DELETE] /db
+break Server presently unable to read request
+Server --> Client: 500\n{"message": "Error: (description of error)"}
+end
+Server -> Handler: deleteDatabase
+Handler -> Service: deleteDatabase(RegisterRequest)
+Service -> DataAccess: deleteDatabase()
+DataAccess -> db:Clear database
+break Unsuccessful db operation
+DataAccess --> Service: db Operation Failed
+Service --> Server: DataAccessException
+Server --> Client: 500\n{"message": "Error: failed server side db operation "}
+end
+DataAccess --> Service: db Operation Success
+Service --> Handler: RegisterResult
+Handler --> Server: {}
+Server --> Client: 200\n{}
+end
