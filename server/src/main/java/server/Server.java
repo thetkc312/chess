@@ -1,16 +1,25 @@
 package server;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
+import dataaccess.MemoryDataAccess;
+import datamodel.AuthData;
+import datamodel.UserData;
 import io.javalin.*;
 import io.javalin.http.Context;
+import service.UserServices;
 
+import java.util.Date;
 import java.util.Map;
 
 public class Server {
 
     private final Javalin javalinServer;
+    private final UserServices userService;
 
     public Server() {
+        var DataAccess = new MemoryDataAccess();
+        userService = new UserServices(DataAccess);
         javalinServer = Javalin.create(config -> config.staticFiles.add("web"));
 
         // Register your endpoints and exception handlers here.
@@ -21,13 +30,19 @@ public class Server {
     }
 
     private void register(Context ctx) {
-        Gson serializer = new Gson();
-        String requestJson = ctx.body();
-        Map request = serializer.fromJson(requestJson, Map.class);
+        try {
+            Gson serializer = new Gson();
+            String requestJson = ctx.body();
 
-        // FIXME: Implement actual authtoken generating
-        Map result = Map.of("username", request.get("username"), "authToken", "myHardCodedAuthToken");
-        ctx.result(serializer.toJson(result));
+            UserData user = serializer.fromJson(requestJson, UserData.class);
+            AuthData authData = userService.register(user);
+
+            ctx.result(serializer.toJson(authData));
+        } catch (DataAccessException e) {
+            // TODO: Implement actual 403 error for attempting to create a user that is already taken
+            String message = "";
+        }
+
     }
 
     public int run(int desiredPort) {
