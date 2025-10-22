@@ -1,10 +1,9 @@
 package service;
 
 import dataaccess.DataAccess;
-import dataaccess.DataAccessTest;
 import dataaccess.MemoryDataAccess;
-import datamodel.AuthData;
-import datamodel.UserData;
+import model.AuthData;
+import model.UserData;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

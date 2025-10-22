@@ -1,9 +1,7 @@
 package dataaccess;
 
-import datamodel.UserData;
+import model.UserData;
 import org.junit.jupiter.api.Test;
-
-import javax.xml.crypto.Data;
 
 import static org.junit.jupiter.api.Assertions.*;
 

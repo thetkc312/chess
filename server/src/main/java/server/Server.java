@@ -3,14 +3,11 @@ package server;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
-import datamodel.AuthData;
-import datamodel.UserData;
+import model.AuthData;
+import model.UserData;
 import io.javalin.*;
 import io.javalin.http.Context;
 import service.UserServices;
-
-import java.util.Date;
-import java.util.Map;
 
 public class Server {
 
