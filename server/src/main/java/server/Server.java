@@ -13,6 +13,8 @@ import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
 import service.UserServices;
 
+import java.util.Map;
+
 public class Server {
 
     private final Javalin javalinServer;
@@ -45,7 +47,8 @@ public class Server {
             ctx.result(serializer.toJson(authData));
         } catch (AlreadyTakenException e) {
             ctx.status(403); //FIXME: Actually set the status code
-            ctx.result(e.getMessage());
+            var errorResponse = Map.of("message", "Error: already taken");
+            ctx.result(serializer.toJson(errorResponse));
         }
     }
 
