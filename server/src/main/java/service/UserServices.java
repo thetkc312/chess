@@ -14,15 +14,21 @@ public class UserServices {
         this.dataAccess = dataAccess;
     }
     // Register
-    public AuthData register(UserData user) throws AlreadyTakenException {
+    public AuthData register(UserData user) throws BadRequestException, AlreadyTakenException {
+        if (invalidField(user.username()) || invalidField(user.password()) || invalidField(user.email())) {
+            throw new BadRequestException("400: Malformed information for user registration.");
+        }
         if (!dataAccess.createUser(user)) {
-            throw new AlreadyTakenException("403: User already exists");
+            throw new AlreadyTakenException("403: User already exists.");
         }
         return dataAccess.createAuth(user.username());
     }
     // Login
-    public AuthData login(UserData user) throws AlreadyTakenException, InvalidCredentialsException {
-        if (dataAccess.authExists(user.username())) {
+    public AuthData login(UserData user) throws BadRequestException, AlreadyTakenException, InvalidCredentialsException {
+        if (invalidField(user.username()) || invalidField(user.password())) {
+            throw new BadRequestException("400: Malformed information for user login.");
+        }
+        if (dataAccess.hasAuthToken(user.username())) {
             throw new AlreadyTakenException("403: User already logged in elsewhere.");
         }
         if (dataAccess.validLogin(user.username(), user.password())) {
@@ -36,5 +42,9 @@ public class UserServices {
     // Clear
     public void clear() {
         dataAccess.clear();
+    }
+
+    private boolean invalidField(String field) {
+        return (field == null) || (field.isBlank());
     }
 }

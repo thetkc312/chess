@@ -11,6 +11,7 @@ import model.UserData;
 import io.javalin.*;
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
+import service.BadRequestException;
 import service.UserServices;
 
 import java.util.Map;
@@ -45,8 +46,13 @@ public class Server {
             AuthData authData = userService.register(user);
 
             ctx.result(serializer.toJson(authData));
+        } catch (BadRequestException e) {
+            ctx.status(400);
+            // TODO: Check if its possible to include the error message in the report
+            var errorResponse = Map.of("message", "Error: bad request");
+            ctx.result(serializer.toJson(errorResponse));
         } catch (AlreadyTakenException e) {
-            ctx.status(403); //FIXME: Actually set the status code
+            ctx.status(403);
             var errorResponse = Map.of("message", "Error: already taken");
             ctx.result(serializer.toJson(errorResponse));
         }
@@ -61,12 +67,18 @@ public class Server {
             AuthData authData = userService.login(user);
 
             ctx.result(serializer.toJson(authData));
-        } catch (AlreadyTakenException e) {
-            ctx.status(403);
-            ctx.result(e.getMessage());
+        } catch (BadRequestException e) {
+            ctx.status(400);
+            var errorResponse = Map.of("message", "Error: bad request");
+            ctx.result(serializer.toJson(errorResponse));
         } catch (InvalidCredentialsException e) {
             ctx.status(401);
-            ctx.result(e.getMessage());
+            var errorResponse = Map.of("message", "Error: unauthorized");
+            ctx.result(serializer.toJson(errorResponse));
+        } catch (AlreadyTakenException e) {
+            ctx.status(403);
+            var errorResponse = Map.of("message", "Error: already taken"); // User logged in elsewhere
+            ctx.result(serializer.toJson(errorResponse));
         }
     }
 

@@ -47,7 +47,7 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public boolean authExists(String username) {
+    public boolean hasAuthToken(String username) {
         return authMap.containsKey(username);
     }
 

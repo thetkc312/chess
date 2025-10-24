@@ -10,7 +10,7 @@ public interface DataAccess {
     boolean validLogin(String username, String password);
     //boolean logout(AuthData auth);
     AuthData createAuth(String username);
-    boolean authExists(String username);
+    boolean hasAuthToken(String username);
     boolean validAuth(AuthData authData);
 
 }
