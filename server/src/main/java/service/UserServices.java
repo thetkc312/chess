@@ -3,8 +3,8 @@ package service;
 import dataaccess.AlreadyTakenException;
 import dataaccess.DataAccess;
 import dataaccess.InvalidCredentialsException;
-import datamodel.AuthData;
-import datamodel.UserData;
+import model.AuthData;
+import model.UserData;
 
 public class UserServices {
     private final DataAccess dataAccess;

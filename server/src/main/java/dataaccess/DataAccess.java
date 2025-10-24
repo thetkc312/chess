@@ -1,7 +1,7 @@
 package dataaccess;
 
-import datamodel.AuthData;
-import datamodel.UserData;
+import model.AuthData;
+import model.UserData;
 
 public interface DataAccess {
     void clear();
