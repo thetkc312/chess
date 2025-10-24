@@ -1,7 +1,8 @@
 package service;
 
+import dataaccess.AlreadyTakenException;
 import dataaccess.DataAccess;
-import dataaccess.DataAccessException;
+import dataaccess.InvalidCredentialsException;
 import datamodel.AuthData;
 import datamodel.UserData;
 
@@ -13,18 +14,27 @@ public class UserServices {
         this.dataAccess = dataAccess;
     }
     // Register
-    // Login
-    // Logout
-    public AuthData register(UserData user) throws DataAccessException {
-        if (dataAccess.getUser(user.username()) != null) {
-            // TODO: Implement custom ServiceAccessException
-            throw new DataAccessException("403: User already exists");
+    public AuthData register(UserData user) throws AlreadyTakenException {
+        if (!dataAccess.createUser(user)) {
+            throw new AlreadyTakenException("403: User already exists");
         }
-        return new AuthData(user.username(), generateAuthToken());
+        return dataAccess.createAuth(user.username());
     }
+    // Login
+    public AuthData login(UserData user) throws AlreadyTakenException, InvalidCredentialsException {
+        if (dataAccess.authExists(user.username())) {
+            throw new AlreadyTakenException("403: User already logged in elsewhere.");
+        }
+        if (dataAccess.validLogin(user.username(), user.password())) {
+            return dataAccess.createAuth(user.username());
+        } else {
+            throw new InvalidCredentialsException("401: Credentials do not match a known user.");
+        }
+    }
+    // Logout
 
-    private String generateAuthToken() {
-        // TODO: Implement actual authToken generation
-        return "xyz";
+    // Clear
+    public void clear() {
+        dataAccess.clear();
     }
 }

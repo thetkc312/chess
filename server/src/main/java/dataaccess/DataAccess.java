@@ -1,10 +1,16 @@
 package dataaccess;
 
+import datamodel.AuthData;
 import datamodel.UserData;
 
 public interface DataAccess {
     void clear();
-    void createUser(UserData user);
-    UserData getUser(String username);
+    boolean createUser(UserData user); // True for success, False for failure
+    boolean userExists(String username);
+    boolean validLogin(String username, String password);
+    //boolean logout(AuthData auth);
+    AuthData createAuth(String username);
+    boolean authExists(String username);
+    boolean validAuth(AuthData authData);
 
 }
