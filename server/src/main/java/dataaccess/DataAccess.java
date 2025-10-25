@@ -8,9 +8,10 @@ public interface DataAccess {
     boolean createUser(UserData user); // True for success, False for failure
     boolean userExists(String username);
     boolean validLogin(String username, String password);
-    //boolean logout(AuthData auth);
     AuthData createAuth(String username);
+    String getUserAuth(String username);
     boolean hasAuthToken(String username);
     boolean validAuth(AuthData authData);
+    boolean logoutAuth(String authToken);
 
 }

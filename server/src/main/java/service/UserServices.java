@@ -28,16 +28,22 @@ public class UserServices {
         if (invalidField(user.username()) || invalidField(user.password())) {
             throw new BadRequestException("400: Malformed information for user login.");
         }
-        if (dataAccess.hasAuthToken(user.username())) {
-            throw new AlreadyTakenException("403: User already logged in elsewhere.");
-        }
         if (dataAccess.validLogin(user.username(), user.password())) {
+            if (dataAccess.hasAuthToken(user.username())) {
+                String authToken = dataAccess.getUserAuth(user.username());
+                dataAccess.logoutAuth(authToken);
+            }
             return dataAccess.createAuth(user.username());
         } else {
             throw new InvalidCredentialsException("401: Credentials do not match a known user.");
         }
     }
     // Logout
+    public void logout(String authToken) throws InvalidCredentialsException {
+        if (!dataAccess.logoutAuth(authToken)) {
+            throw new InvalidCredentialsException("401: Authentication token does not match a known user for logout.");
+        }
+    }
 
     // Clear
     public void clear() {
