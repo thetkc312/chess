@@ -81,4 +81,6 @@ public class MemoryDataAccess implements DataAccess {
         // TODO: Implement actual authToken generation
         return UUID.randomUUID().toString();
     }
+
+    // TODO: Start by listing game related methods and declaring the types of errors they throw
 }
