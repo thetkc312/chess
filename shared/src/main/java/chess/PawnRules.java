@@ -42,18 +42,14 @@ public class PawnRules extends MoveRules {
         // Checking if the pawn can move forward at all
         // If the space in front of the pawn is on the board and empty, it is a potential move location
         ChessPosition candidatePosition = myPosition.getMovedPosition(direction, 0);
-        if (candidatePosition.isOnBoard()) {
-            if (board.getPiece(candidatePosition) == null) {
-                pawnMoves.add(new int[]{direction, 0});
-                // If the pawn is still in its starting row, it might be able to move twice
-                if (myPosition.getRow() == startingRow) {
-                    // If the space two in front of the pawn is also on the board and empty, it is a potential move location
-                    candidatePosition = myPosition.getMovedPosition(direction+direction, 0);
-                    if (candidatePosition.isOnBoard()) {
-                        if (board.getPiece(candidatePosition) == null) {
-                            pawnMoves.add(new int[]{direction+direction, 0});
-                        }
-                    }
+        if (candidatePosition.isOnBoard() && board.getPiece(candidatePosition) == null) {
+            pawnMoves.add(new int[]{direction, 0});
+            // If the pawn is still in its starting row, it might be able to move twice
+            if (myPosition.getRow() == startingRow) {
+                // If the space two in front of the pawn is also on the board and empty, it is a potential move location
+                candidatePosition = myPosition.getMovedPosition(direction+direction, 0);
+                if (candidatePosition.isOnBoard() && board.getPiece(candidatePosition) == null) {
+                    pawnMoves.add(new int[]{direction+direction, 0});
                 }
             }
         }

@@ -179,21 +179,6 @@ public class ChessGame {
         return movesCausingCheck;
     }
 
-    // Produce a collection of the primaryMoves who share endPos values with secondaryMoves
-    private Collection<ChessMove> findEndPosIntersection(Collection<ChessMove> primaryMoves, Collection<ChessMove> secondaryMoves) {
-        // Generate a set of all the end positions of moves among secondaryMoves
-        HashSet<ChessPosition> checkMoveEndPositions = new HashSet<>(secondaryMoves.size());
-        for (ChessMove someCheckMove : secondaryMoves)
-            checkMoveEndPositions.add(someCheckMove.getEndPosition());
-        HashSet<ChessMove> moveEndIntersection = new HashSet<>();
-        for (ChessMove somePrimaryMove : primaryMoves)
-            if (checkMoveEndPositions.contains(somePrimaryMove.getEndPosition()))
-                // Add to the intersection set all primaryMoves who share an endPosition with secondaryMoves
-                moveEndIntersection.add(somePrimaryMove);
-
-        return moveEndIntersection;
-    }
-
     /**
      * Determines if the given team is in checkmate
      *

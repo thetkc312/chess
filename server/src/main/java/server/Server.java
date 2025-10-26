@@ -46,18 +46,11 @@ public class Server {
 
             ctx.result(serializer.toJson(authData));
         } catch (BadRequestException e) {
-            ctx.status(400);
-            // TODO: Check if its possible to include the error message in the report
-            var errorResponse = Map.of("message", "Error: bad request");
-            ctx.result(serializer.toJson(errorResponse));
+            report400Error(ctx, serializer, e);
         } catch (AlreadyTakenException e) {
-            ctx.status(403);
-            var errorResponse = Map.of("message", "Error: already taken");
-            ctx.result(serializer.toJson(errorResponse));
+            report403Error(ctx, serializer, e);
         } catch (DataAccessException e) {
-            ctx.status(500);
-            var errorResponse = Map.of("message", String.format("Error: %s", e.getMessage()));
-            ctx.result(serializer.toJson(errorResponse));
+            report500Error(ctx, serializer, e);
         }
     }
 
@@ -71,17 +64,11 @@ public class Server {
 
             ctx.result(serializer.toJson(authData));
         } catch (BadRequestException e) {
-            ctx.status(400);
-            var errorResponse = Map.of("message", "Error: bad request");
-            ctx.result(serializer.toJson(errorResponse));
+            report400Error(ctx, serializer, e);
         } catch (InvalidCredentialsException e) {
-            ctx.status(401);
-            var errorResponse = Map.of("message", "Error: unauthorized");
-            ctx.result(serializer.toJson(errorResponse));
+            report401Error(ctx, serializer, e);
         } catch (DataAccessException e) {
-            ctx.status(500);
-            var errorResponse = Map.of("message", String.format("Error: %s", e.getMessage()));
-            ctx.result(serializer.toJson(errorResponse));
+            report500Error(ctx, serializer, e);
         }
     }
 
@@ -93,13 +80,9 @@ public class Server {
 
             ctx.result();
         } catch (InvalidCredentialsException e) {
-            ctx.status(401);
-            var errorResponse = Map.of("message", "Error: unauthorized");
-            ctx.result(serializer.toJson(errorResponse));
+            report401Error(ctx, serializer, e);
         } catch (DataAccessException e) {
-            ctx.status(500);
-            var errorResponse = Map.of("message", String.format("Error: %s", e.getMessage()));
-            ctx.result(serializer.toJson(errorResponse));
+            report500Error(ctx, serializer, e);
         }
     }
 
@@ -112,13 +95,9 @@ public class Server {
             var successResponse = Map.of("games", gameList);
             ctx.result(serializer.toJson(successResponse));
         } catch (InvalidCredentialsException e) {
-            ctx.status(401);
-            var errorResponse = Map.of("message", "Error: unauthorized");
-            ctx.result(serializer.toJson(errorResponse));
+            report401Error(ctx, serializer, e);
         } catch (DataAccessException e) {
-            ctx.status(500);
-            var errorResponse = Map.of("message", String.format("Error: %s", e.getMessage()));
-            ctx.result(serializer.toJson(errorResponse));
+            report500Error(ctx, serializer, e);
         }
     }
 
@@ -133,17 +112,11 @@ public class Server {
             var successResponse = Map.of("gameID", gameID);
             ctx.result(serializer.toJson(successResponse));
         } catch (BadRequestException e) {
-            ctx.status(400);
-            var errorResponse = Map.of("message", "Error: bad request");
-            ctx.result(serializer.toJson(errorResponse));
+            report400Error(ctx, serializer, e);
         } catch (InvalidCredentialsException e) {
-            ctx.status(401);
-            var errorResponse = Map.of("message", "Error: unauthorized");
-            ctx.result(serializer.toJson(errorResponse));
+            report401Error(ctx, serializer, e);
         } catch (DataAccessException e) {
-            ctx.status(500);
-            var errorResponse = Map.of("message", String.format("Error: %s", e.getMessage()));
-            ctx.result(serializer.toJson(errorResponse));
+            report500Error(ctx, serializer, e);
         }
     }
 
@@ -157,21 +130,13 @@ public class Server {
 
             ctx.result();
         } catch (BadRequestException e) {
-            ctx.status(400);
-            var errorResponse = Map.of("message", "Error: bad request");
-            ctx.result(serializer.toJson(errorResponse));
+            report400Error(ctx, serializer, e);
         } catch (InvalidCredentialsException e) {
-            ctx.status(401);
-            var errorResponse = Map.of("message", "Error: unauthorized");
-            ctx.result(serializer.toJson(errorResponse));
+            report401Error(ctx, serializer, e);
         } catch (AlreadyTakenException e) {
-            ctx.status(403);
-            var errorResponse = Map.of("message", "Error: already taken");
-            ctx.result(serializer.toJson(errorResponse));
+            report403Error(ctx, serializer, e);
         } catch (DataAccessException e) {
-            ctx.status(500);
-            var errorResponse = Map.of("message", String.format("Error: %s", e.getMessage()));
-            ctx.result(serializer.toJson(errorResponse));
+            report500Error(ctx, serializer, e);
         }
     }
     private record JoinBody(ChessGame.TeamColor playerColor, int gameID) {};
@@ -180,11 +145,30 @@ public class Server {
         try {
             userService.clear();
         } catch (DataAccessException e) {
-            ctx.status(500);
-            var errorResponse = Map.of("message", String.format("Error: %s", e.getMessage()));
             Gson serializer = new Gson();
-            ctx.result(serializer.toJson(errorResponse));
+            report500Error(ctx, serializer, e);
         }
+    }
+
+    private void report400Error(Context ctx, Gson serializer, Exception e) {
+        ctx.status(400);
+        var errorResponse = Map.of("message", String.format("Error: bad request (%s)", e.getMessage()));
+        ctx.result(serializer.toJson(errorResponse));
+    }
+    private void report401Error(Context ctx, Gson serializer, Exception e) {
+        ctx.status(401);
+        var errorResponse = Map.of("message", String.format("Error: unauthorized (%s)", e.getMessage()));
+        ctx.result(serializer.toJson(errorResponse));
+    }
+    private void report403Error(Context ctx, Gson serializer, Exception e) {
+        ctx.status(403);
+        var errorResponse = Map.of("message", String.format("Error: already taken (%s)", e.getMessage()));
+        ctx.result(serializer.toJson(errorResponse));
+    }
+    private void report500Error(Context ctx, Gson serializer, Exception e) {
+        ctx.status(500);
+        var errorResponse = Map.of("message", String.format("Error: %s", e.getMessage()));
+        ctx.result(serializer.toJson(errorResponse));
     }
 
     public int run(int desiredPort) {
