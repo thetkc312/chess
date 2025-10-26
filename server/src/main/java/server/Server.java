@@ -3,6 +3,7 @@ package server;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.AlreadyTakenException;
+import dataaccess.DataAccessException;
 import dataaccess.InvalidCredentialsException;
 import dataaccess.MemoryDataAccess;
 import model.AuthData;
@@ -56,6 +57,10 @@ public class Server {
             ctx.status(403);
             var errorResponse = Map.of("message", "Error: already taken");
             ctx.result(serializer.toJson(errorResponse));
+        } catch (DataAccessException e) {
+            ctx.status(500);
+            var errorResponse = Map.of("message", String.format("Error: %s", e.getMessage()));
+            ctx.result(serializer.toJson(errorResponse));
         }
     }
 
@@ -76,6 +81,10 @@ public class Server {
             ctx.status(401);
             var errorResponse = Map.of("message", "Error: unauthorized");
             ctx.result(serializer.toJson(errorResponse));
+        } catch (DataAccessException e) {
+            ctx.status(500);
+            var errorResponse = Map.of("message", String.format("Error: %s", e.getMessage()));
+            ctx.result(serializer.toJson(errorResponse));
         }
     }
 
@@ -89,6 +98,10 @@ public class Server {
         } catch (InvalidCredentialsException e) {
             ctx.status(401);
             var errorResponse = Map.of("message", "Error: unauthorized");
+            ctx.result(serializer.toJson(errorResponse));
+        } catch (DataAccessException e) {
+            ctx.status(500);
+            var errorResponse = Map.of("message", String.format("Error: %s", e.getMessage()));
             ctx.result(serializer.toJson(errorResponse));
         }
     }
@@ -104,6 +117,10 @@ public class Server {
         } catch (InvalidCredentialsException e) {
             ctx.status(401);
             var errorResponse = Map.of("message", "Error: unauthorized");
+            ctx.result(serializer.toJson(errorResponse));
+        } catch (DataAccessException e) {
+            ctx.status(500);
+            var errorResponse = Map.of("message", String.format("Error: %s", e.getMessage()));
             ctx.result(serializer.toJson(errorResponse));
         }
     }
@@ -125,6 +142,10 @@ public class Server {
         } catch (InvalidCredentialsException e) {
             ctx.status(401);
             var errorResponse = Map.of("message", "Error: unauthorized");
+            ctx.result(serializer.toJson(errorResponse));
+        } catch (DataAccessException e) {
+            ctx.status(500);
+            var errorResponse = Map.of("message", String.format("Error: %s", e.getMessage()));
             ctx.result(serializer.toJson(errorResponse));
         }
     }
@@ -150,12 +171,23 @@ public class Server {
             ctx.status(403);
             var errorResponse = Map.of("message", "Error: already taken");
             ctx.result(serializer.toJson(errorResponse));
+        } catch (DataAccessException e) {
+            ctx.status(500);
+            var errorResponse = Map.of("message", String.format("Error: %s", e.getMessage()));
+            ctx.result(serializer.toJson(errorResponse));
         }
     }
     private record JoinBody(ChessGame.TeamColor playerColor, int gameID) {};
 
     private void deleteDB(Context ctx) {
-        userService.clear();
+        try {
+            userService.clear();
+        } catch (DataAccessException e) {
+            ctx.status(500);
+            var errorResponse = Map.of("message", String.format("Error: %s", e.getMessage()));
+            Gson serializer = new Gson();
+            ctx.result(serializer.toJson(errorResponse));
+        }
     }
 
     public int run(int desiredPort) {
