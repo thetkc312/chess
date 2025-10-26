@@ -4,7 +4,10 @@ import dataaccess.AlreadyTakenException;
 import dataaccess.DataAccess;
 import dataaccess.InvalidCredentialsException;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
+
+import java.util.ArrayList;
 
 public class UserServices {
     private final DataAccess dataAccess;
@@ -43,6 +46,26 @@ public class UserServices {
         if (!dataAccess.logoutAuth(authToken)) {
             throw new InvalidCredentialsException("401: Authentication token does not match a known user for logout.");
         }
+    }
+
+    // List
+    public ArrayList<GameData> list(String authToken) throws InvalidCredentialsException {
+        if (!dataAccess.validAuth(authToken)) {
+            throw new InvalidCredentialsException("401: Authentication token does not match a known user for creating a game.");
+        }
+        return dataAccess.listGames();
+    }
+
+    // Create
+    public int create(String authToken, String gameName) throws BadRequestException, InvalidCredentialsException {
+        if (invalidField(gameName)) {
+            throw new BadRequestException("400: Malformed information for game creation (Game Name).");
+        }
+        if (!dataAccess.validAuth(authToken)) {
+            throw new InvalidCredentialsException("401: Authentication token does not match a known user for creating a game.");
+        }
+        int gameID = dataAccess.createGame(gameName);
+        return gameID;
     }
 
     // Clear

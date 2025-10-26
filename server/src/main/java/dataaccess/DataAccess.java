@@ -17,7 +17,7 @@ public interface DataAccess {
     AuthData createAuth(String username);
     String getUserAuth(String username);
     boolean hasAuthToken(String username);
-    boolean validAuth(AuthData authData);
+    boolean validAuth(String authToken);
     boolean logoutAuth(String authToken);
 
     int createGame(String gameName); // Response includes the gameID
