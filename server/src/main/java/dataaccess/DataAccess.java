@@ -15,11 +15,14 @@ public interface DataAccess {
     boolean validLogin(String username, String password);
 
     AuthData createAuth(String username);
-    boolean validAuth(String authToken);
+    boolean authExists(String authToken);
+    String getUser(String authToken);
     boolean logoutAuth(String authToken);
 
     int createGame(String gameName); // Response includes the gameID
-    boolean joinGame(ChessGame.TeamColor teamColor, int gameID); // Response is empty
+    boolean gameExists(int gameID);
+    void joinGame(String username, ChessGame.TeamColor teamColor, int gameID); // Response is empty
+    boolean roleOpen(int gameID, ChessGame.TeamColor teamColor);
     ArrayList<GameData> listGames();
 
 }

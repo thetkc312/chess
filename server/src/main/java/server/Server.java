@@ -1,5 +1,6 @@
 package server;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.AlreadyTakenException;
 import dataaccess.InvalidCredentialsException;
@@ -28,11 +29,11 @@ public class Server {
 
         // Register your endpoints and exception handlers here.
         javalinServer.post("user", (Context ctx) -> register(ctx)); // Register a user. If successful, an authorization authToken is returned. You may use the authToken with future requests that require authorization. No authorization authToken is required to call this endpoint.
-        javalinServer.post("session", (Context ctx) -> login(ctx)); // TODO: Log in a user. If successful, an authorization authToken is returned. You may use the authToken with future requests that require authorization. No authorization authToken is required to call this endpoint.
-        javalinServer.delete("session", (Context ctx) -> logout(ctx)); // TODO: Logs out an authenticated user. An authToken is required to call this endpoint.
-        javalinServer.get("game", (Context ctx) -> getGames(ctx)); // TODO: Lists all the games in the database. This API does not take a request body. The response JSON lists all the games. An authToken is required to call this endpoint.
-        javalinServer.post("game", (Context ctx) -> createGame(ctx)); // TODO: Create a new Chess Game. The request body must contain a name for the game. The response JSON contains the ID of created game, or if failed, an error message describing the reason. An authToken is required to call this endpoint.
-        //javalinServer.put("game", (Context ctx) -> joinGame(ctx)); // TODO: Join a Chess Game. The request body must contain the game ID and player color. An authToken is required to call this endpoint.
+        javalinServer.post("session", (Context ctx) -> login(ctx)); // Log in a user. If successful, an authorization authToken is returned. You may use the authToken with future requests that require authorization. No authorization authToken is required to call this endpoint.
+        javalinServer.delete("session", (Context ctx) -> logout(ctx)); // Logs out an authenticated user. An authToken is required to call this endpoint.
+        javalinServer.get("game", (Context ctx) -> getGames(ctx)); // Lists all the games in the database. This API does not take a request body. The response JSON lists all the games. An authToken is required to call this endpoint.
+        javalinServer.post("game", (Context ctx) -> createGame(ctx)); // Create a new Chess Game. The request body must contain a name for the game. The response JSON contains the ID of created game, or if failed, an error message describing the reason. An authToken is required to call this endpoint.
+        javalinServer.put("game", (Context ctx) -> joinGame(ctx)); // TODO: Join a Chess Game. The request body must contain the game ID and player color. An authToken is required to call this endpoint.
         javalinServer.delete("db", (Context ctx) -> deleteDB(ctx)); // Clear ALL data from the database. This includes users and all game data. No authorization authToken is required.
 
     }
@@ -74,10 +75,6 @@ public class Server {
         } catch (InvalidCredentialsException e) {
             ctx.status(401);
             var errorResponse = Map.of("message", "Error: unauthorized");
-            ctx.result(serializer.toJson(errorResponse));
-        } catch (AlreadyTakenException e) {
-            ctx.status(403);
-            var errorResponse = Map.of("message", "Error: already taken"); // User logged in elsewhere
             ctx.result(serializer.toJson(errorResponse));
         }
     }
@@ -131,6 +128,31 @@ public class Server {
             ctx.result(serializer.toJson(errorResponse));
         }
     }
+
+    private void joinGame(Context ctx) {
+        Gson serializer = new Gson();
+        String authToken = ctx.header("authorization");
+        String requestJson = ctx.body();
+        JoinBody joinBody = serializer.fromJson(requestJson, JoinBody.class);
+        try {
+            userService.joinGame(authToken, joinBody.gameID, joinBody.playerColor);
+
+            ctx.result();
+        } catch (BadRequestException e) {
+            ctx.status(400);
+            var errorResponse = Map.of("message", "Error: bad request");
+            ctx.result(serializer.toJson(errorResponse));
+        } catch (InvalidCredentialsException e) {
+            ctx.status(401);
+            var errorResponse = Map.of("message", "Error: unauthorized");
+            ctx.result(serializer.toJson(errorResponse));
+        } catch (AlreadyTakenException e) {
+            ctx.status(403);
+            var errorResponse = Map.of("message", "Error: already taken");
+            ctx.result(serializer.toJson(errorResponse));
+        }
+    }
+    private record JoinBody(ChessGame.TeamColor playerColor, int gameID) {};
 
     private void deleteDB(Context ctx) {
         userService.clear();

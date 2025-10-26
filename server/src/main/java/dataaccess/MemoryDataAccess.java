@@ -14,7 +14,7 @@ public class MemoryDataAccess implements DataAccess {
     private final HashMap<String, UserData> userMap = new HashMap<>();
     private final HashMap<String, String> authMap = new HashMap<>(); // Hash map of format AuthToken: Username
     private final HashMap<Integer, GameData> gameMap = new HashMap<>(); // Hash map of format GameID: GameData
-    private int gameID = 0;
+    private int gameID = 1;
 
     @Override
     public void clear() {
@@ -53,8 +53,13 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public boolean validAuth(String authToken) {
+    public boolean authExists(String authToken) {
         return authMap.containsKey(authToken);
+    }
+
+    @Override
+    public String getUser(String authToken) {
+        return authMap.get(authToken);
     }
 
     @Override
@@ -74,13 +79,37 @@ public class MemoryDataAccess implements DataAccess {
     @Override
     public int createGame(String gameName) {
         gameID += 1;
-        gameMap.put(gameID, new GameData(gameID, "", "", gameName, new ChessGame()));
+        gameMap.put(gameID, new GameData(gameID, null, null, gameName, new ChessGame()));
         return gameID;
     }
 
     @Override
-    public boolean joinGame(ChessGame.TeamColor teamColor, int gameID) {
-        return false;
+    public boolean gameExists(int gameID) {
+        return gameMap.containsKey(gameID);
+    }
+
+    @Override
+    public boolean roleOpen(int gameID, ChessGame.TeamColor teamColor) {
+        if (teamColor == ChessGame.TeamColor.BLACK) {
+            return gameMap.get(gameID).blackUsername() == null;
+        } else {
+            return gameMap.get(gameID).whiteUsername() == null;
+        }
+    }
+
+    @Override
+    public void joinGame(String username, ChessGame.TeamColor teamColor, int gameID) {
+        String whiteUsername = gameMap.get(gameID).whiteUsername();
+        String blackUsername = gameMap.get(gameID).blackUsername();
+        if (teamColor == ChessGame.TeamColor.BLACK) {
+            blackUsername = username;
+        } else {
+            whiteUsername = username;
+        }
+        String oldGameName = gameMap.get(gameID).gameName();
+        ChessGame oldGame = gameMap.get(gameID).game();
+        GameData newGameData = new GameData(gameID, whiteUsername, blackUsername, oldGameName, oldGame);
+        gameMap.put(gameID, newGameData);
     }
 
     @Override
