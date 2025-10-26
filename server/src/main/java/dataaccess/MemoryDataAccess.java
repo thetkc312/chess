@@ -83,7 +83,6 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     private String generateAuthToken() {
-        // TODO: Implement actual authToken generation
         return UUID.randomUUID().toString();
     }
 
