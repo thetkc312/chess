@@ -31,7 +31,6 @@ public class ChessPiece {
         } else {
             myColor = ChessGame.TeamColor.BLACK;
         }
-        // TODO: Clean up switch/case logic
         type = switch (charPiece) {
             case 'q' -> PieceType.QUEEN;
             case 'r' -> PieceType.ROOK;

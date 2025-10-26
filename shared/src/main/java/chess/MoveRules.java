@@ -28,14 +28,12 @@ public abstract class MoveRules {
      *
      * @param board      in its current state
      * @param myPosition where this piece is located
-     *                   // TODO: Implement potentialMove as a class of its own
      * @return a HashSet of 2-deep integer arrays encoding potential directions this piece could move
      */
     // A hash set of int arrays of format [row, col] where each [row, col] pair indicates a potential move direction of a piece
     protected abstract HashSet<int[]> potentialMoves(ChessBoard board, ChessPosition myPosition);
 
     public HashSet<ChessMove> getMoves(ChessBoard board, ChessPosition myPosition) {
-        // TODO: Implement potentialMove as a class of its own
         for (int[] potentialMove : potentialMoves(board, myPosition)) {
             ChessPosition targetPosition = myPosition.getMovedPosition(potentialMove[0], potentialMove[1]);
             if (!targetPosition.isOnBoard()) {

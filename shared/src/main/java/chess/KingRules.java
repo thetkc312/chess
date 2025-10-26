@@ -19,7 +19,6 @@ public class KingRules extends MoveRules {
         kingMoves.add(new int[]{1, -1});
         kingMoves.add(new int[]{1, 0});
         kingMoves.add(new int[]{1, 1});
-        // TODO: Add castling rules
         return kingMoves;
     }
 }

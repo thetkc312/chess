@@ -15,7 +15,6 @@ public class RookRules extends MoveRules {
         rookMoves.add(new int[]{0, -1});
         rookMoves.add(new int[]{0, 1});
         rookMoves.add(new int[]{1, 0});
-        // TODO: Add castling rules
         return rookMoves;
     }
 }

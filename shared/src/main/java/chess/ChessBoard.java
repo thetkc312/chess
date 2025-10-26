@@ -54,7 +54,6 @@ public class ChessBoard {
         return boardSquares[position.getRow() - 1][position.getColumn() - 1];
     }
 
-    // TODO: Make this a generator to find all pieces of a type
     public Collection<ChessPosition> findPiece(ChessPiece pieceOfInterest) {
         HashSet<ChessPosition> piecesOfInterest = new HashSet<>(10);
         // Represent the board as a string

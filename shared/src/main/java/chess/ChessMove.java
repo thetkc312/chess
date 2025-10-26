@@ -46,7 +46,9 @@ public class ChessMove {
 
     @Override
     public String toString() {
-        // TODO: Implement toString for case with promotion piece
+        if (promotionPiece != null) {
+            return String.format("%s->%s(%s)", startPosition, endPosition, promotionPiece);
+        }
         return String.format("%s->%s", startPosition, endPosition);
     }
 

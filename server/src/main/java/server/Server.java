@@ -69,7 +69,7 @@ public class Server {
         Gson serializer = new Gson();
         String requestJson = ctx.body();
 
-        UserData user = serializer.fromJson(requestJson, UserData.class); //FIXME: Consider if the "email" field needs to be filled in this instance
+        UserData user = serializer.fromJson(requestJson, UserData.class);
         try {
             AuthData authData = userService.login(user);
 
