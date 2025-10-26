@@ -31,7 +31,8 @@ public abstract class MoveRules {
      *                   // TODO: Implement potentialMove as a class of its own
      * @return a HashSet of 2-deep integer arrays encoding potential directions this piece could move
      */
-    protected abstract HashSet<int[]> potentialMoves(ChessBoard board, ChessPosition myPosition); // A hash set of int arrays of format [row, col] where each [row, col] pair indicates a potential move direction of a piece
+    // A hash set of int arrays of format [row, col] where each [row, col] pair indicates a potential move direction of a piece
+    protected abstract HashSet<int[]> potentialMoves(ChessBoard board, ChessPosition myPosition);
 
     public HashSet<ChessMove> getMoves(ChessBoard board, ChessPosition myPosition) {
         // TODO: Implement potentialMove as a class of its own
@@ -43,8 +44,14 @@ public abstract class MoveRules {
             // Check if the location the piece wants to move to can be moved into
             while (isValidMove(board, targetPosition)) {
                 // If the piece is a pawn and moving into the uppermost or lowermost row, it must be promoted
-                if (board.getPiece(myPosition).getPieceType() == ChessPiece.PieceType.PAWN && (targetPosition.getRow() == 1 || targetPosition.getRow() == 8)) {
-                    for (ChessPiece.PieceType promotionCandidate : new ChessPiece.PieceType[]{ChessPiece.PieceType.QUEEN, ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.KNIGHT, ChessPiece.PieceType.ROOK}) {
+                if (board.getPiece(myPosition).getPieceType() == ChessPiece.PieceType.PAWN
+                        && (targetPosition.getRow() == 1
+                        || targetPosition.getRow() == 8)) {
+                    ChessPiece.PieceType[] allPieces = new ChessPiece.PieceType[]{ChessPiece.PieceType.QUEEN,
+                                                                                  ChessPiece.PieceType.BISHOP,
+                                                                                  ChessPiece.PieceType.KNIGHT,
+                                                                                  ChessPiece.PieceType.ROOK};
+                    for (ChessPiece.PieceType promotionCandidate : allPieces) {
                         validMoveSet.add(new ChessMove(myPosition, targetPosition, promotionCandidate));
                     }
                 } else {
@@ -54,7 +61,8 @@ public abstract class MoveRules {
                 if (!unlimitedDistance) {
                     break;
                 }
-                // If the targetPosition is an empty position, continue adding moves. Otherwise, it must be taking an enemy piece and forced to stop, and should not recurse.
+                // If the targetPosition is an empty position, continue adding moves. Otherwise,
+                // it must be taking an enemy piece and forced to stop, and should not recurse.
                 if (board.getPiece(targetPosition) == null) {
                     targetPosition = targetPosition.getMovedPosition(potentialMove[0], potentialMove[1]);
                 } else {

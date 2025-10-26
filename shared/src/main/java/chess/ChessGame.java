@@ -159,7 +159,12 @@ public class ChessGame {
         return movesCausingCheck;
     }
 
-    private HashSet<ChessMove> reverseSearchCheck(ChessBoard hypotheticalBoard, ChessPosition kingPosition, TeamColor teamColor, ChessPiece.PieceType checkPieceType, boolean pieceCanJump) {
+    private HashSet<ChessMove> reverseSearchCheck(
+            ChessBoard hypotheticalBoard,
+            ChessPosition kingPosition,
+            TeamColor teamColor,
+            ChessPiece.PieceType checkPieceType,
+            boolean pieceCanJump) {
         // For each piece type, see where a piece of that type could move from the kings position
         HashSet<ChessMove> movesCausingCheck = new HashSet<>(0);
         ChessPiece reverseCheckPiece = new ChessPiece(teamColor, checkPieceType);
@@ -171,9 +176,11 @@ public class ChessGame {
             if (reverseMoveEndPiece == null) {
                 continue;
             }
-            // Check if any of those positions contain enemy pieces of that type. If so, that piece could move into the king's space and is causing a check.
+            // Check if any of those positions contain enemy pieces of that type.
+            // If so, that piece could move into the king's space and is causing a check.
             if (reverseMoveEndPiece.getTeamColor() != teamColor && reverseMoveEndPiece.getPieceType() == checkPieceType) {
-                // If pieceCanJump is false, it might be possible block the piece somewhere along its path, so all reverse moves end positions are candidates for ending check.
+                // If pieceCanJump is false, it might be possible block the piece somewhere along
+                // its path, so all reverse moves end positions are candidates for ending check.
                 if (!pieceCanJump) {
                     movesCausingCheck.addAll(reverseMoves);
                     break;
@@ -198,7 +205,8 @@ public class ChessGame {
         if (checkingMoves.isEmpty()) {
             return false;
         }
-        // For all pieces of the team in check, see if there are any validMoves (moves that don't leave the king in Check). If there are no valid moves, the king is in Checkmate.
+        // For all pieces of the team in check, see if there are any validMoves (moves that
+        // don't leave the king in Check). If there are no valid moves, the king is in Checkmate.
         return !validMovesExist(activeBoard, teamColor);
     }
 
