@@ -15,8 +15,6 @@ public interface DataAccess {
     boolean validLogin(String username, String password);
 
     AuthData createAuth(String username);
-    String getUserAuth(String username);
-    boolean hasAuthToken(String username);
     boolean validAuth(String authToken);
     boolean logoutAuth(String authToken);
 

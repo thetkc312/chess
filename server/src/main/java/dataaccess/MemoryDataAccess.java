@@ -13,7 +13,6 @@ public class MemoryDataAccess implements DataAccess {
 
     private final HashMap<String, UserData> userMap = new HashMap<>();
     private final HashMap<String, String> authMap = new HashMap<>(); // Hash map of format AuthToken: Username
-    private final HashMap<String, String> authUserMap = new HashMap<>(); // Hash map of format Username: AuthToken
     private final HashMap<Integer, GameData> gameMap = new HashMap<>(); // Hash map of format GameID: GameData
     private int gameID = 0;
 
@@ -21,7 +20,6 @@ public class MemoryDataAccess implements DataAccess {
     public void clear() {
         userMap.clear();
         authMap.clear();
-        authUserMap.clear();
         gameMap.clear();
     }
 
@@ -51,18 +49,7 @@ public class MemoryDataAccess implements DataAccess {
     public AuthData createAuth(String username) {
         String authToken = generateAuthToken();
         authMap.put(authToken, username);
-        authUserMap.put(username, authToken);
         return new AuthData(username, authToken);
-    }
-
-    @Override
-    public String getUserAuth(String username) {
-        return authUserMap.get(username);
-    }
-
-    @Override
-    public boolean hasAuthToken(String username) {
-        return authUserMap.containsKey(username);
     }
 
     @Override
@@ -76,8 +63,6 @@ public class MemoryDataAccess implements DataAccess {
             return false;
         }
         authMap.remove(authToken);
-        String username = authMap.get(authToken);
-        authUserMap.remove(username);
         return true;
 
     }

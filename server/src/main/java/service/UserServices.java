@@ -32,10 +32,12 @@ public class UserServices {
             throw new BadRequestException("400: Malformed information for user login.");
         }
         if (dataAccess.validLogin(user.username(), user.password())) {
-            if (dataAccess.hasAuthToken(user.username())) {
-                String authToken = dataAccess.getUserAuth(user.username());
-                dataAccess.logoutAuth(authToken);
-            }
+            // This code would log out a user each time they were logged in elsewhere. This became
+            // unnecessary with the behavior that a user can be logged in to multiple sessions at once.
+//            if (dataAccess.hasAuthToken(user.username())) {
+//                String authToken = dataAccess.getUserAuth(user.username());
+//                dataAccess.logoutAuth(authToken);
+//            }
             return dataAccess.createAuth(user.username());
         } else {
             throw new InvalidCredentialsException("401: Credentials do not match a known user.");
