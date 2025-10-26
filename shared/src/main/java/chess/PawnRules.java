@@ -47,14 +47,13 @@ public class PawnRules extends MoveRules {
             // If the pawn is still in its starting row, it might be able to move twice
             if (myPosition.getRow() == startingRow) {
                 // If the space two in front of the pawn is also on the board and empty, it is a potential move location
-                candidatePosition = myPosition.getMovedPosition(direction+direction, 0);
+                candidatePosition = myPosition.getMovedPosition(direction + direction, 0);
                 if (candidatePosition.isOnBoard() && board.getPiece(candidatePosition) == null) {
-                    pawnMoves.add(new int[]{direction+direction, 0});
+                    pawnMoves.add(new int[]{direction + direction, 0});
                 }
             }
         }
 
-        // TODO: Add potential moves for capturing pieces, and for en passe capture
         // If there is an opponent's piece to a diagonal of the pawn, it can move into its space
         for (int leftRight : new int[]{-1, 1}) {
             candidatePosition = myPosition.getMovedPosition(direction, leftRight);

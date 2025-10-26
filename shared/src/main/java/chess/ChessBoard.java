@@ -15,7 +15,8 @@ public class ChessBoard {
 
     ChessPiece[][] boardSquares = new ChessPiece[8][8];
 
-    public ChessBoard() {    }
+    public ChessBoard() {
+    }
 
     public static ChessBoard fromString(String inputBoardString) {
         int stringPos = 0;
@@ -70,7 +71,7 @@ public class ChessBoard {
             int colPos = lastFoundPos % 9 + 1;
             piecesOfInterest.add(new ChessPosition(rowPos, colPos));
             lastFoundPos += 1;
-            boardString = boardString.substring(locatedCharPos+1);
+            boardString = boardString.substring(locatedCharPos + 1);
             locatedCharPos = boardString.indexOf(pieceChar);
         }
         // If the corresponding piece could not be found, -1 is returned
@@ -82,19 +83,11 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        String defaultBoard =
-                "rnbqkbnr\n" +
-                "pppppppp\n" +
-                "--------\n" +
-                "--------\n" +
-                "--------\n" +
-                "--------\n" +
-                "PPPPPPPP\n" +
-                "RNBQKBNR";
+        String defaultBoard = "rnbqkbnr\n" + "pppppppp\n" + "--------\n" + "--------\n" + "--------\n" + "--------\n" + "PPPPPPPP\n" + "RNBQKBNR";
         int stringPos = 0;
         for (int rowPos = 8; rowPos >= 1; rowPos--, stringPos++) {
             for (int colPos = 1; colPos <= 8; colPos++, stringPos++) {
-                boardSquares[rowPos-1][colPos-1] = null;
+                boardSquares[rowPos - 1][colPos - 1] = null;
                 ChessPiece pieceFromChar = ChessPiece.fromLetter(defaultBoard.charAt(stringPos));
                 if (pieceFromChar != null) {
                     addPiece(new ChessPosition(rowPos, colPos), pieceFromChar);

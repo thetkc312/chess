@@ -85,6 +85,7 @@ public class UserServices {
     private boolean invalidField(Object field) {
         return field == null || field.toString().isBlank();
     }
+
     private boolean invalidField(int field) {
         return field == 0;
     }

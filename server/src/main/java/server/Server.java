@@ -23,7 +23,7 @@ public class Server {
     public Server() {
         DataAccess dataAccess = new MemoryDataAccess();
         userService = new UserServices(dataAccess);
-        javalinServer = Javalin.create( (JavalinConfig config) -> config.staticFiles.add("web"));
+        javalinServer = Javalin.create((JavalinConfig config) -> config.staticFiles.add("web"));
 
         // Register your endpoints and exception handlers here.
         javalinServer.post("user", (Context ctx) -> register(ctx)); // Register a user. If successful, an authorization authToken is returned. You may use the authToken with future requests that require authorization. No authorization authToken is required to call this endpoint.
@@ -139,7 +139,11 @@ public class Server {
             report500Error(ctx, serializer, e);
         }
     }
-    private record JoinBody(ChessGame.TeamColor playerColor, int gameID) {};
+
+    private record JoinBody(ChessGame.TeamColor playerColor, int gameID) {
+    }
+
+    ;
 
     private void deleteDB(Context ctx) {
         try {
@@ -155,16 +159,19 @@ public class Server {
         var errorResponse = Map.of("message", String.format("Error: bad request (%s)", e.getMessage()));
         ctx.result(serializer.toJson(errorResponse));
     }
+
     private void report401Error(Context ctx, Gson serializer, Exception e) {
         ctx.status(401);
         var errorResponse = Map.of("message", String.format("Error: unauthorized (%s)", e.getMessage()));
         ctx.result(serializer.toJson(errorResponse));
     }
+
     private void report403Error(Context ctx, Gson serializer, Exception e) {
         ctx.status(403);
         var errorResponse = Map.of("message", String.format("Error: already taken (%s)", e.getMessage()));
         ctx.result(serializer.toJson(errorResponse));
     }
+
     private void report500Error(Context ctx, Gson serializer, Exception e) {
         ctx.status(500);
         var errorResponse = Map.of("message", String.format("Error: %s", e.getMessage()));

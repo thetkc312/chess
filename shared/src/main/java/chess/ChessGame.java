@@ -46,8 +46,7 @@ public class ChessGame {
      * Enum identifying the 2 possible teams in a chess game
      */
     public enum TeamColor {
-        WHITE,
-        BLACK
+        WHITE, BLACK
     }
 
     /**
@@ -66,10 +65,13 @@ public class ChessGame {
                     // Confirm that the desired move does not end with the King in check
                     ChessBoard hypotheticalBoard = activeBoard.deepCopy();
                     applyMove(hypotheticalBoard, movementValidMove);
-                    ChessPosition kingPosition = hypotheticalBoard.findPiece(new ChessPiece(movePiece.getTeamColor(), ChessPiece.PieceType.KING)).iterator().next();
-                    // If this move results in a hypotheticalBoard where there are no ways that the moving team's King is in check, add it to the legalValidMove set
-                    if (reverseSearchCheckAll(hypotheticalBoard, kingPosition, movePiece.getTeamColor()).isEmpty())
+                    ChessPiece kingPiece = new ChessPiece(movePiece.getTeamColor(), ChessPiece.PieceType.KING);
+                    ChessPosition kingPosition = hypotheticalBoard.findPiece(kingPiece).iterator().next();
+                    // If this move results in a hypotheticalBoard where there are no ways that
+                    // the moving team's King is in check, add it to the legalValidMove set.
+                    if (reverseSearchCheckAll(hypotheticalBoard, kingPosition, movePiece.getTeamColor()).isEmpty()) {
                         legalValidMoves.add(movementValidMove);
+                    }
                 }
                 return legalValidMoves;
             }
@@ -103,8 +105,9 @@ public class ChessGame {
         }
 
         // Verify that the desired move is among the hypothetically possible moves
-        if (!hypotheticalMoves.contains(move))
+        if (!hypotheticalMoves.contains(move)) {
             throw new InvalidMoveException("Provided ChessMove object does not represent a valid move for this piece in this board-state.");
+        }
 
         // Logic for moving a chess piece on the board when it is known that the move is valid
         applyMove(activeBoard, move);
@@ -127,7 +130,8 @@ public class ChessGame {
             movingPiece = new ChessPiece(movingPiece.getTeamColor(), promotionType);
         }
         someBoard.addPiece(startPosition, null);
-        // Since this logic is only reached if the move is among the hypotheticalMoves (which must be valid), we don't need to check if the endPosition is valid.
+        // Since this logic is only reached if the move is among the hypotheticalMoves
+        // (which must be valid), we don't need to check if the endPosition is valid.
         someBoard.addPiece(endPosition, movingPiece);
     }
 
@@ -164,8 +168,9 @@ public class ChessGame {
         for (ChessMove reverseMove : reverseMoves) {
             ChessPosition reverseMoveEndPos = reverseMove.getEndPosition();
             ChessPiece reverseMoveEndPiece = hypotheticalBoard.getPiece(reverseMoveEndPos);
-            if (reverseMoveEndPiece == null)
+            if (reverseMoveEndPiece == null) {
                 continue;
+            }
             // Check if any of those positions contain enemy pieces of that type. If so, that piece could move into the king's space and is causing a check.
             if (reverseMoveEndPiece.getTeamColor() != teamColor && reverseMoveEndPiece.getPieceType() == checkPieceType) {
                 // If pieceCanJump is false, it might be possible block the piece somewhere along its path, so all reverse moves end positions are candidates for ending check.
@@ -190,8 +195,9 @@ public class ChessGame {
         ChessPiece targetKing = new ChessPiece(teamColor, ChessPiece.PieceType.KING);
         ChessPosition kingPosition = activeBoard.findPiece(targetKing).iterator().next();
         HashSet<ChessMove> checkingMoves = reverseSearchCheckAll(activeBoard, kingPosition, teamColor);
-        if (checkingMoves.isEmpty())
+        if (checkingMoves.isEmpty()) {
             return false;
+        }
         // For all pieces of the team in check, see if there are any validMoves (moves that don't leave the king in Check). If there are no valid moves, the king is in Checkmate.
         return !validMovesExist(activeBoard, teamColor);
     }
@@ -205,8 +211,9 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         // First, see if the king is in check. If so, it cannot be stalemate.
-        if (isInCheck(teamColor))
+        if (isInCheck(teamColor)) {
             return false;
+        }
         // If there are no valid moves, this is a stalemate.
         return !validMovesExist(activeBoard, teamColor);
     }
@@ -219,8 +226,9 @@ public class ChessGame {
             // If any pieces of that type could be found belonging to this team...
             for (ChessPosition potentialCheckSavior : livingPieces) {
                 // ... return true if any one among them has a valid move.
-                if (!validMoves(potentialCheckSavior).isEmpty())
+                if (!validMoves(potentialCheckSavior).isEmpty()) {
                     return true;
+                }
             }
         }
         // If all validMoves generated for this team's pieces are empty, there are no valid moves.
