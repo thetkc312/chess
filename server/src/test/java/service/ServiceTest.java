@@ -93,7 +93,7 @@ public class ServiceTest {
     void loginInvalid() throws BadRequestException, InvalidCredentialsException, DataAccessException {
         assertThrows(BadRequestException.class, () -> service.login(userBad));
         dataAccess.createUser(userBob);
-        UserData fakeUser = new UserData(userBob.username(), userBob.email(), userBob.password().concat("Wrong"));
+        UserData fakeUser = new UserData(userBob.username(), userBob.email(), "Wrong");
         assertThrows(InvalidCredentialsException.class, () -> service.login(fakeUser));
     }
 
@@ -113,7 +113,7 @@ public class ServiceTest {
         dataAccess.createUser(userBob);
         AuthData authData = dataAccess.createAuth(userBob.username());
 
-        assertThrows(InvalidCredentialsException.class, () -> service.logout(authData.authToken().concat("Wrong")));
+        assertThrows(InvalidCredentialsException.class, () -> service.logout("Wrong"));
         assertTrue(dataAccess.userExists(userBob.username()));
         assertTrue(dataAccess.authExists(authData.authToken()));
     }
@@ -134,7 +134,7 @@ public class ServiceTest {
         dataAccess.createUser(userBob);
         AuthData authData = dataAccess.createAuth(userBob.username());
 
-        assertThrows(InvalidCredentialsException.class, () -> service.list(authData.authToken().concat("Wrong")));
+        assertThrows(InvalidCredentialsException.class, () -> service.list("Wrong"));
 
     }
 
@@ -150,7 +150,7 @@ public class ServiceTest {
         dataAccess.createUser(userBob);
         AuthData authData = dataAccess.createAuth(userBob.username());
         assertThrows(BadRequestException.class, () -> service.create(authData.authToken(), ""));
-        assertThrows(InvalidCredentialsException.class, () -> service.create(authData.authToken().concat("Wrong"), userBob.username().concat("Game")));
+        assertThrows(InvalidCredentialsException.class, () -> service.create("Wrong", userBob.username().concat("Game")));
         assertEquals(0, dataAccess.listGames().size());
     }
 
@@ -173,7 +173,7 @@ public class ServiceTest {
         assertThrows(BadRequestException.class, () -> service.joinGame(authData.authToken(), 0, ChessGame.TeamColor.WHITE));
         assertThrows(BadRequestException.class, () -> service.joinGame(authData.authToken(), gameID, null));
         assertTrue(dataAccess.roleOpen(gameID, ChessGame.TeamColor.WHITE));
-        assertThrows(InvalidCredentialsException.class, () -> service.joinGame(authData.authToken().concat("Wrong"), gameID, ChessGame.TeamColor.WHITE));
+        assertThrows(InvalidCredentialsException.class, () -> service.joinGame("Wrong", gameID, ChessGame.TeamColor.WHITE));
         assertTrue(dataAccess.roleOpen(gameID, ChessGame.TeamColor.WHITE));
     }
 
