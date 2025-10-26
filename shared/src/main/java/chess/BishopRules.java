@@ -10,11 +10,11 @@ public class BishopRules extends MoveRules {
     }
 
     protected HashSet<int[]> potentialMoves(ChessBoard board, ChessPosition myPosition) {
-        HashSet<int[]> BishopMoves = new HashSet<>(8);
-        BishopMoves.add(new int[]{-1, -1});
-        BishopMoves.add(new int[]{-1, 1});
-        BishopMoves.add(new int[]{1, -1});
-        BishopMoves.add(new int[]{1, 1});
-        return BishopMoves;
+        HashSet<int[]> bishopMoves = new HashSet<>(8);
+        bishopMoves.add(new int[]{-1, -1});
+        bishopMoves.add(new int[]{-1, 1});
+        bishopMoves.add(new int[]{1, -1});
+        bishopMoves.add(new int[]{1, 1});
+        return bishopMoves;
     }
 }

@@ -2,10 +2,7 @@ package server;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
-import dataaccess.AlreadyTakenException;
-import dataaccess.DataAccessException;
-import dataaccess.InvalidCredentialsException;
-import dataaccess.MemoryDataAccess;
+import dataaccess.*;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -24,8 +21,8 @@ public class Server {
     private final UserServices userService;
 
     public Server() {
-        var DataAccess = new MemoryDataAccess();
-        userService = new UserServices(DataAccess);
+        DataAccess dataAccess = new MemoryDataAccess();
+        userService = new UserServices(dataAccess);
         javalinServer = Javalin.create( (JavalinConfig config) -> config.staticFiles.add("web"));
 
         // Register your endpoints and exception handlers here.
