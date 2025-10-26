@@ -10,7 +10,7 @@ import io.javalin.*;
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
 import service.BadRequestException;
-import service.UserServices;
+import service.Service;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -18,11 +18,11 @@ import java.util.Map;
 public class Server {
 
     private final Javalin javalinServer;
-    private final UserServices userService;
+    private final Service userService;
 
     public Server() {
         DataAccess dataAccess = new MemoryDataAccess();
-        userService = new UserServices(dataAccess);
+        userService = new Service(dataAccess);
         javalinServer = Javalin.create((JavalinConfig config) -> config.staticFiles.add("web"));
 
         // Register your endpoints and exception handlers here.

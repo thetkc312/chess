@@ -11,10 +11,10 @@ import model.UserData;
 
 import java.util.ArrayList;
 
-public class UserServices {
+public class Service {
     private final DataAccess dataAccess;
 
-    public UserServices(DataAccess dataAccess) {
+    public Service(DataAccess dataAccess) {
 
         this.dataAccess = dataAccess;
     }
