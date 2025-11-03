@@ -22,6 +22,8 @@ public class Server {
 
     public Server() {
         DataAccess dataAccess = new MemoryDataAccess();
+        //DataAccess dataAccess = new MySqlDataAccess();
+
         userService = new Service(dataAccess);
         javalinServer = Javalin.create((JavalinConfig config) -> config.staticFiles.add("web"));
 
