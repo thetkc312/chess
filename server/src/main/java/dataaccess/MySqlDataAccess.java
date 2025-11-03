@@ -6,6 +6,7 @@ import model.GameData;
 import model.UserData;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -19,7 +20,9 @@ public class MySqlDataAccess implements DataAccess {
 
     @Override
     public void clear() {
-
+        // TODO: Implement custom DataAccessException for DatabaseException
+        // TODO: Make Service handle results from DataAccess interface to know when to throw a DatabaseException
+        // TODO: Integrate DatabaseException catching to throw 500 error codes in Server.java
     }
 
     @Override
@@ -93,7 +96,7 @@ public class MySqlDataAccess implements DataAccess {
     private void configureTable(String[] dataTableTemplate) throws DataAccessException {
         try (Connection connection = DatabaseManager.getConnection()) {
             for (String statement : dataTableTemplate) {
-                try (var preparedStatement = connection.prepareStatement(statement)) {
+                try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
                     preparedStatement.executeUpdate();
                 }
             }
