@@ -20,66 +20,173 @@ public class MySqlDataAccess implements DataAccess {
 
     @Override
     public void clear() throws DatabaseException {
-        // TODO: Integrate DatabaseException catching to throw 500 error codes in Server.java
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String statement =
+                    """
+                    DROP DATABASE %s
+                    """.formatted(databaseName);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+                initializeDatabase();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to clear database: %s", ex.getMessage()));
+        }
     }
 
     @Override
     public boolean createUser(UserData user) throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String statement = "";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to create user in database: %s", ex.getMessage()));
+        }
         return false;
     }
 
     @Override
     public boolean userExists(String username) throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String statement = "";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to check if user exists in database: %s", ex.getMessage()));
+        }
         return false;
     }
 
     @Override
     public boolean validLogin(String username, String password) throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String statement = "";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to check for valid login info in database: %s", ex.getMessage()));
+        }
         return false;
     }
 
     @Override
     public AuthData createAuth(String username) throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String statement = "";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to add authentication entry to database: %s", ex.getMessage()));
+        }
         return null;
     }
 
     @Override
     public boolean authExists(String authToken) throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String statement = "";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to check if authentication token database: %s", ex.getMessage()));
+        }
         return false;
     }
 
     @Override
     public String getUser(String authToken) throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String statement = "";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to check if user is in database: %s", ex.getMessage()));
+        }
         return "";
     }
 
     @Override
     public boolean logoutAuth(String authToken) throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String statement = "";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to log user out of database: %s", ex.getMessage()));
+        }
         return false;
     }
 
     @Override
     public int createGame(String gameName) throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String statement = "";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to add game to database: %s", ex.getMessage()));
+        }
         return 0;
     }
 
     @Override
     public boolean gameExists(int gameID) throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String statement = "";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to check if game exists in database: %s", ex.getMessage()));
+        }
         return false;
     }
 
     @Override
     public void joinGame(String username, ChessGame.TeamColor teamColor, int gameID) throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String statement = "";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to join user to game in database: %s", ex.getMessage()));
+        }
 
     }
 
     @Override
     public boolean roleOpen(int gameID, ChessGame.TeamColor teamColor) throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String statement = "";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to check if role is open in database: %s", ex.getMessage()));
+        }
         return false;
     }
 
     @Override
     public ArrayList<GameData> listGames() throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String statement = "";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to list games in database: %s", ex.getMessage()));
+        }
         return null;
     }
 
