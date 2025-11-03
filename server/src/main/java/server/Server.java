@@ -69,7 +69,7 @@ public class Server {
             report400Error(ctx, serializer, e);
         } catch (AlreadyTakenException e) {
             report403Error(ctx, serializer, e);
-        } catch (DataAccessException e) {
+        } catch (DatabaseException e) {
             report500Error(ctx, serializer, e);
         }
     }
@@ -87,7 +87,7 @@ public class Server {
             report400Error(ctx, serializer, e);
         } catch (InvalidCredentialsException e) {
             report401Error(ctx, serializer, e);
-        } catch (DataAccessException e) {
+        } catch (DatabaseException e) {
             report500Error(ctx, serializer, e);
         }
     }
@@ -101,7 +101,7 @@ public class Server {
             ctx.result();
         } catch (InvalidCredentialsException e) {
             report401Error(ctx, serializer, e);
-        } catch (DataAccessException e) {
+        } catch (DatabaseException e) {
             report500Error(ctx, serializer, e);
         }
     }
@@ -116,7 +116,7 @@ public class Server {
             ctx.result(serializer.toJson(successResponse));
         } catch (InvalidCredentialsException e) {
             report401Error(ctx, serializer, e);
-        } catch (DataAccessException e) {
+        } catch (DatabaseException e) {
             report500Error(ctx, serializer, e);
         }
     }
@@ -135,7 +135,7 @@ public class Server {
             report400Error(ctx, serializer, e);
         } catch (InvalidCredentialsException e) {
             report401Error(ctx, serializer, e);
-        } catch (DataAccessException e) {
+        } catch (DatabaseException e) {
             report500Error(ctx, serializer, e);
         }
     }
@@ -155,7 +155,7 @@ public class Server {
             report401Error(ctx, serializer, e);
         } catch (AlreadyTakenException e) {
             report403Error(ctx, serializer, e);
-        } catch (DataAccessException e) {
+        } catch (DatabaseException e) {
             report500Error(ctx, serializer, e);
         }
     }
@@ -168,7 +168,7 @@ public class Server {
     private void deleteDB(Context ctx) {
         try {
             userService.clear();
-        } catch (DataAccessException e) {
+        } catch (DatabaseException e) {
             Gson serializer = new Gson();
             report500Error(ctx, serializer, e);
         }

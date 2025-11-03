@@ -1,10 +1,7 @@
 package service;
 
 import chess.ChessGame;
-import dataaccess.AlreadyTakenException;
-import dataaccess.DataAccess;
-import dataaccess.DataAccessException;
-import dataaccess.InvalidCredentialsException;
+import dataaccess.*;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -20,7 +17,7 @@ public class Service {
     }
 
     public AuthData register(UserData user)
-            throws BadRequestException, AlreadyTakenException, DataAccessException {
+            throws BadRequestException, AlreadyTakenException, DatabaseException {
         if (invalidField(user.username()) || invalidField(user.password()) || invalidField(user.email())) {
             throw new BadRequestException("400: Malformed information for user registration.");
         }
@@ -31,7 +28,7 @@ public class Service {
     }
 
     public AuthData login(UserData user)
-            throws BadRequestException, InvalidCredentialsException, DataAccessException {
+            throws BadRequestException, InvalidCredentialsException, DatabaseException {
         if (invalidField(user.username()) || invalidField(user.password())) {
             throw new BadRequestException("400: Malformed information for user login.");
         }
@@ -43,14 +40,14 @@ public class Service {
     }
 
     public void logout(String authToken)
-            throws InvalidCredentialsException, DataAccessException {
+            throws InvalidCredentialsException, DatabaseException {
         if (!dataAccess.logoutAuth(authToken)) {
             throw new InvalidCredentialsException("401: Authentication token does not match a known user for logout.");
         }
     }
 
     public ArrayList<GameData> list(String authToken)
-            throws InvalidCredentialsException, DataAccessException {
+            throws InvalidCredentialsException, DatabaseException {
         if (!dataAccess.authExists(authToken)) {
             throw new InvalidCredentialsException("401: Authentication token does not match a known user for creating a game.");
         }
@@ -58,7 +55,7 @@ public class Service {
     }
 
     public int create(String authToken, String gameName)
-            throws BadRequestException, InvalidCredentialsException, DataAccessException {
+            throws BadRequestException, InvalidCredentialsException, DatabaseException {
         if (invalidField(gameName)) {
             throw new BadRequestException("400: Malformed information for game creation (Game Name).");
         }
@@ -70,7 +67,7 @@ public class Service {
     }
 
     public void joinGame(String authToken, int gameID, ChessGame.TeamColor teamColor)
-            throws BadRequestException, InvalidCredentialsException, AlreadyTakenException, DataAccessException {
+            throws BadRequestException, InvalidCredentialsException, AlreadyTakenException, DatabaseException {
         if (invalidField(gameID) || invalidField(teamColor) || !dataAccess.gameExists(gameID)) {
             throw new BadRequestException("400: Malformed information for joining game.");
         }
@@ -85,7 +82,7 @@ public class Service {
     }
 
     public void clear()
-            throws DataAccessException {
+            throws DatabaseException {
         dataAccess.clear();
     }
 

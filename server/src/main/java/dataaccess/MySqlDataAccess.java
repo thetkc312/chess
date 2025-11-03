@@ -20,7 +20,6 @@ public class MySqlDataAccess implements DataAccess {
 
     @Override
     public void clear() {
-        // TODO: Implement custom DataAccessException for DatabaseException
         // TODO: Make Service handle results from DataAccess interface to know when to throw a DatabaseException
         // TODO: Integrate DatabaseException catching to throw 500 error codes in Server.java
     }
