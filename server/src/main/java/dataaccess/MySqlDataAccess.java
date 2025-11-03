@@ -19,72 +19,71 @@ public class MySqlDataAccess implements DataAccess {
     }
 
     @Override
-    public void clear() {
-        // TODO: Make Service handle results from DataAccess interface to know when to throw a DatabaseException
+    public void clear() throws DatabaseException {
         // TODO: Integrate DatabaseException catching to throw 500 error codes in Server.java
     }
 
     @Override
-    public boolean createUser(UserData user) {
+    public boolean createUser(UserData user) throws DatabaseException {
         return false;
     }
 
     @Override
-    public boolean userExists(String username) {
+    public boolean userExists(String username) throws DatabaseException {
         return false;
     }
 
     @Override
-    public boolean validLogin(String username, String password) {
+    public boolean validLogin(String username, String password) throws DatabaseException {
         return false;
     }
 
     @Override
-    public AuthData createAuth(String username) {
+    public AuthData createAuth(String username) throws DatabaseException {
         return null;
     }
 
     @Override
-    public boolean authExists(String authToken) {
+    public boolean authExists(String authToken) throws DatabaseException {
         return false;
     }
 
     @Override
-    public String getUser(String authToken) {
+    public String getUser(String authToken) throws DatabaseException {
         return "";
     }
 
     @Override
-    public boolean logoutAuth(String authToken) {
+    public boolean logoutAuth(String authToken) throws DatabaseException {
         return false;
     }
 
     @Override
-    public int createGame(String gameName) {
+    public int createGame(String gameName) throws DatabaseException {
         return 0;
     }
 
     @Override
-    public boolean gameExists(int gameID) {
+    public boolean gameExists(int gameID) throws DatabaseException {
         return false;
     }
 
     @Override
-    public void joinGame(String username, ChessGame.TeamColor teamColor, int gameID) {
+    public void joinGame(String username, ChessGame.TeamColor teamColor, int gameID) throws DatabaseException {
 
     }
 
     @Override
-    public boolean roleOpen(int gameID, ChessGame.TeamColor teamColor) {
+    public boolean roleOpen(int gameID, ChessGame.TeamColor teamColor) throws DatabaseException {
         return false;
     }
 
     @Override
-    public ArrayList<GameData> listGames() {
+    public ArrayList<GameData> listGames() throws DatabaseException {
         return null;
     }
 
-    private void initializeDatabase() throws DataAccessException {
+    private void initializeDatabase() throws DatabaseException {
         DatabaseManager.createDatabase();
         databaseName = DatabaseManager.getDatabaseName();
         configureTable(userTableTemplate);
@@ -92,7 +91,7 @@ public class MySqlDataAccess implements DataAccess {
         configureTable(authTableTemplate);
     }
 
-    private void configureTable(String[] dataTableTemplate) throws DataAccessException {
+    private void configureTable(String[] dataTableTemplate) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
             for (String statement : dataTableTemplate) {
                 try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
@@ -100,8 +99,7 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException ex) {
-            // TODO: Consider implementing a unique DataAccessException subclass for Database issues corresponding to the 500 error code, like the InvalidCredentialsException for the 401 code.
-            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+            throw new DatabaseException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
     }
 
