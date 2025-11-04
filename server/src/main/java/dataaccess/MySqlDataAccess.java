@@ -1,6 +1,7 @@
 package dataaccess;
 
 import chess.ChessGame;
+import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -15,6 +16,7 @@ import java.util.UUID;
 public class MySqlDataAccess implements DataAccess {
 
     private String databaseName;
+    private int gameID = 1;
 
     public MySqlDataAccess() throws DataAccessException {
         initializeDatabase();
@@ -179,15 +181,21 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public int createGame(String gameName) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
-            // TODO: Implement
-            String statement = "";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+            String gameAddStatement =
+                    """
+                    INSERT INTO game_data (gameName, game) VALUES (?, ?)
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameAddStatement)) {
+                gameID += 1;
+                GameData gameData = new GameData(gameID, null, null, gameName, new ChessGame());
+                preparedStatement.setString(1, gameData.gameName());
+                preparedStatement.setString(2, new Gson().toJson(gameData));
                 preparedStatement.executeUpdate();
+                return gameID;
             }
         } catch (SQLException ex) {
             throw new DatabaseException(String.format("Unable to add game to database: %s", ex.getMessage()));
         }
-        return 0;
     }
 
     @Override
