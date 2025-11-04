@@ -25,7 +25,7 @@ public class Server {
         try {
             dataAccess = new MySqlDataAccess();
             //dataAccess = new MemoryDataAccess();
-        } catch (DataAccessException e) {
+        } catch (DatabaseException e) {
             System.out.println(e.getMessage());
             System.out.println("Starting server with MemoryDataAccess instance instead.");
             dataAccess = new MemoryDataAccess();
@@ -43,7 +43,7 @@ public class Server {
         javalinServer.post("session", (Context ctx) -> login(ctx));
         // Logs out an authenticated user. An authToken is required to call this endpoint.
         javalinServer.delete("session", (Context ctx) -> logout(ctx));
-        // Lists all the games in the database. This API does not take a request body. The
+        // Lists all the games in the dataaccess. This API does not take a request body. The
         // response JSON lists all the games. An authToken is required to call this endpoint.
         javalinServer.get("game", (Context ctx) -> getGames(ctx));
         // Create a new Chess Game. The request body must contain a name for the game. The response JSON contains the ID of
@@ -51,7 +51,7 @@ public class Server {
         javalinServer.post("game", (Context ctx) -> createGame(ctx));
         // Join a Chess Game. The request body must contain the game ID and player color. An authToken is required to call this endpoint.
         javalinServer.put("game", (Context ctx) -> joinGame(ctx));
-        // Clear ALL data from the database. This includes users and all game data. No authorization authToken is required.
+        // Clear ALL data from the dataaccess. This includes users and all game data. No authorization authToken is required.
         javalinServer.delete("db", (Context ctx) -> deleteDB(ctx));
 
     }

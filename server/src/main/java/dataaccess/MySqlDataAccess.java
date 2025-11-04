@@ -19,7 +19,7 @@ public class MySqlDataAccess implements DataAccess {
     private String databaseName;
     private int gameID;
 
-    public MySqlDataAccess() throws DataAccessException {
+    public MySqlDataAccess() throws DatabaseException {
         initializeDatabase();
         gameID = 0;
     }
@@ -36,7 +36,7 @@ public class MySqlDataAccess implements DataAccess {
                 initializeDatabase();
             }
         } catch (SQLException ex) {
-            throw new DatabaseException(String.format("Unable to clear database: %s", ex.getMessage()));
+            throw new DatabaseException(String.format("Unable to clear dataaccess: %s", ex.getMessage()));
         }
     }
 
@@ -58,7 +58,7 @@ public class MySqlDataAccess implements DataAccess {
                 return true;
             }
         } catch (SQLException ex) {
-            throw new DatabaseException(String.format("Unable to create user in database: %s", ex.getMessage()));
+            throw new DatabaseException(String.format("Unable to create user in dataaccess: %s", ex.getMessage()));
         }
     }
 
@@ -76,7 +76,7 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException ex) {
-            throw new DatabaseException(String.format("Unable to check if user exists in database: %s", ex.getMessage()));
+            throw new DatabaseException(String.format("Unable to check if user exists in dataaccess: %s", ex.getMessage()));
         }
     }
 
@@ -98,7 +98,7 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException ex) {
-            throw new DatabaseException(String.format("Unable to check for valid login info in database: %s", ex.getMessage()));
+            throw new DatabaseException(String.format("Unable to check for valid login info in dataaccess: %s", ex.getMessage()));
         }
     }
 
@@ -117,7 +117,7 @@ public class MySqlDataAccess implements DataAccess {
                 return authData;
             }
         } catch (SQLException ex) {
-            throw new DatabaseException(String.format("Unable to add authentication entry to database: %s", ex.getMessage()));
+            throw new DatabaseException(String.format("Unable to add authentication entry to dataaccess: %s", ex.getMessage()));
         }
     }
 
@@ -142,7 +142,7 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException ex) {
-            throw new DatabaseException(String.format("Unable to check if authentication token exists in database: %s", ex.getMessage()));
+            throw new DatabaseException(String.format("Unable to check if authentication token exists in dataaccess: %s", ex.getMessage()));
         }
         return false;
     }
@@ -162,7 +162,7 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException ex) {
-            throw new DatabaseException(String.format("Unable to check if user is in database: %s", ex.getMessage()));
+            throw new DatabaseException(String.format("Unable to check if user is in dataaccess: %s", ex.getMessage()));
         }
     }
 
@@ -179,7 +179,7 @@ public class MySqlDataAccess implements DataAccess {
                 return rowsAffected > 0;
             }
         } catch (SQLException ex) {
-            throw new DatabaseException(String.format("Unable to log user out of database: %s", ex.getMessage()));
+            throw new DatabaseException(String.format("Unable to log user out of dataaccess: %s", ex.getMessage()));
         }
     }
 
@@ -200,7 +200,7 @@ public class MySqlDataAccess implements DataAccess {
                 return gameID;
             }
         } catch (SQLException ex) {
-            throw new DatabaseException(String.format("Unable to add game to database: %s", ex.getMessage()));
+            throw new DatabaseException(String.format("Unable to add game to dataaccess: %s", ex.getMessage()));
         }
     }
 
@@ -220,7 +220,7 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException ex) {
-            throw new DatabaseException(String.format("Unable to check if game exists in database: %s", ex.getMessage()));
+            throw new DatabaseException(String.format("Unable to check if game exists in dataaccess: %s", ex.getMessage()));
         }
         return false;
     }
@@ -264,7 +264,7 @@ public class MySqlDataAccess implements DataAccess {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException ex) {
-            throw new DatabaseException(String.format("Unable to join user to game in database: %s", ex.getMessage()));
+            throw new DatabaseException(String.format("Unable to join user to game in dataaccess: %s", ex.getMessage()));
         }
 
     }
@@ -291,7 +291,7 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException ex) {
-            throw new DatabaseException(String.format("Unable to check if role is open in database: %s", ex.getMessage()));
+            throw new DatabaseException(String.format("Unable to check if role is open in dataaccess: %s", ex.getMessage()));
         }
     }
 
@@ -313,7 +313,7 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException ex) {
-            throw new DatabaseException(String.format("Unable to list games in database: %s", ex.getMessage()));
+            throw new DatabaseException(String.format("Unable to list games in dataaccess: %s", ex.getMessage()));
         }
     }
 
@@ -333,7 +333,7 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException ex) {
-            throw new DatabaseException(String.format("Unable to configure database: %s", ex.getMessage()));
+            throw new DatabaseException(String.format("Unable to configure dataaccess: %s", ex.getMessage()));
         }
     }
 

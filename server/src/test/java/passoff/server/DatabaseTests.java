@@ -59,7 +59,7 @@ public class DatabaseTests {
         //join the game
         serverFacade.joinPlayer(new TestJoinRequest(ChessGame.TeamColor.WHITE, createResult.getGameID()), auth);
 
-        Assertions.assertTrue(initialRowCount < getDatabaseRows(), "No new data added to database");
+        Assertions.assertTrue(initialRowCount < getDatabaseRows(), "No new data added to dataaccess");
 
         // Test that we can read the data after a restart
         stopServer();
@@ -68,7 +68,7 @@ public class DatabaseTests {
         //list games using the auth
         TestListResult listResult = serverFacade.listGames(auth);
         Assertions.assertEquals(200, serverFacade.getStatusCode(), "Server response code was not 200 OK");
-        Assertions.assertEquals(1, listResult.getGames().length, "Missing game(s) in database after restart");
+        Assertions.assertEquals(1, listResult.getGames().length, "Missing game(s) in dataaccess after restart");
 
         TestListEntry game1 = listResult.getGames()[0];
         Assertions.assertEquals(game1.getGameID(), createResult.getGameID());
@@ -164,7 +164,7 @@ public class DatabaseTests {
                 for (int i = 1; i <= columns; i++) {
                     String value = rs.getString(i);
                     Assertions.assertFalse(value.contains(TEST_USER.getPassword()),
-                            "Found clear text password in database");
+                            "Found clear text password in dataaccess");
                 }
             }
         }
@@ -210,7 +210,7 @@ public class DatabaseTests {
                 return clazz;
             } catch (ReflectiveOperationException ignored) {}
         }
-        throw new ClassNotFoundException("Unable to load database in order to verify persistence. " +
+        throw new ClassNotFoundException("Unable to load dataaccess in order to verify persistence. " +
                 "Are you using DatabaseManager to set your credentials? " +
                 "Did you edit the signature of the getConnection method?");
     }

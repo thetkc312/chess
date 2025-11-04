@@ -27,12 +27,12 @@ public class ServiceTest {
         userBob = new UserData("Bob", "bob@bob.bob", "bigboybob");
         userBot = new UserData("Bot", "bot@bot.bot", "bigboybot");
         userBad = new UserData("Bad", "bad@bad.bad", "");
+        gameName = "BobBot";
     }
 
     @BeforeEach
     public void reset() {
         //gameData = new GameData(606, null, null, "BobBot", new ChessGame());
-        gameName = "BobBot";
         dataAccess = new MemoryDataAccess();
         service = new Service(dataAccess);
     }

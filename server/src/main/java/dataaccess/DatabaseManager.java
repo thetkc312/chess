@@ -10,14 +10,14 @@ public class DatabaseManager {
     private static String connectionUrl;
 
     /*
-     * Load the database information for the db.properties file.
+     * Load the dataaccess information for the db.properties file.
      */
     static {
         loadPropertiesFromResources();
     }
 
     /**
-     * Creates the database if it does not already exist.
+     * Creates the dataaccess if it does not already exist.
      */
     static public void createDatabase() throws DatabaseException {
         var statement = "CREATE DATABASE IF NOT EXISTS " + databaseName;
@@ -25,13 +25,13 @@ public class DatabaseManager {
              var preparedStatement = conn.prepareStatement(statement)) {
             preparedStatement.executeUpdate();
         } catch (SQLException ex) {
-            throw new DatabaseException("failed to create database", ex);
+            throw new DatabaseException("failed to create dataaccess", ex);
         }
     }
 
     /**
-     * Create a connection to the database and sets the catalog based upon the
-     * properties specified in db.properties. Connections to the database should
+     * Create a connection to the dataaccess and sets the catalog based upon the
+     * properties specified in db.properties. Connections to the dataaccess should
      * be short-lived, and you must close the connection when you are done with it.
      * The easiest way to do that is with a try-with-resource block.
      * <br/>
