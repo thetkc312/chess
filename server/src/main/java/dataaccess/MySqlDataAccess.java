@@ -48,8 +48,8 @@ public class MySqlDataAccess implements DataAccess {
                     """;
             try (PreparedStatement preparedStatement = connection.prepareStatement(userAddStatement)) {
                 preparedStatement.setString(1, user.username());
-                preparedStatement.setString(2, user.email());
-                preparedStatement.setString(3, user.password());
+                preparedStatement.setString(2, user.password());
+                preparedStatement.setString(3, user.email());
                 preparedStatement.executeUpdate();
                 return true;
             }
@@ -82,14 +82,24 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public boolean validLogin(String username, String password) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
-            String statement = "";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
-                preparedStatement.executeUpdate();
+            String userExistsStatement =
+                    """
+                    SELECT * FROM user_data WHERE username = ? AND password = ?
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(userExistsStatement)) {
+                preparedStatement.setString(1, username);
+                preparedStatement.setString(2, password);
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    if (rs.next()) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
             }
         } catch (SQLException ex) {
             throw new DatabaseException(String.format("Unable to check for valid login info in database: %s", ex.getMessage()));
         }
-        return false;
     }
 
     @Override
@@ -132,7 +142,7 @@ public class MySqlDataAccess implements DataAccess {
                 }
             }
         } catch (SQLException ex) {
-            throw new DatabaseException(String.format("Unable to check if authentication token database: %s", ex.getMessage()));
+            throw new DatabaseException(String.format("Unable to check if authentication token exists in database: %s", ex.getMessage()));
         }
         return false;
     }
@@ -140,6 +150,7 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public String getUser(String authToken) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
+            // TODO: Implement
             String statement = "";
             try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
@@ -153,6 +164,7 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public boolean logoutAuth(String authToken) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
+            // TODO: Implement
             String statement = "";
             try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
@@ -166,6 +178,7 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public int createGame(String gameName) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
+            // TODO: Implement
             String statement = "";
             try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
@@ -179,6 +192,7 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public boolean gameExists(int gameID) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
+            // TODO: Implement
             String statement = "";
             try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
@@ -192,6 +206,7 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public void joinGame(String username, ChessGame.TeamColor teamColor, int gameID) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
+            // TODO: Implement
             String statement = "";
             try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
@@ -205,6 +220,7 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public boolean roleOpen(int gameID, ChessGame.TeamColor teamColor) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
+            // TODO: Implement
             String statement = "";
             try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
@@ -218,6 +234,7 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public ArrayList<GameData> listGames() throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
+            // TODO: Implement
             String statement = "";
             try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
