@@ -41,6 +41,7 @@ public class DataAccessTest {
 
     @BeforeEach
     public void reset() throws DatabaseException {
+        DatabaseManager.createDatabase();
         try (Connection connection = DatabaseManager.getConnection()) {
             String statement =
                     """
@@ -177,12 +178,42 @@ public class DataAccessTest {
         assertFalse(dataAccess.userExists(userBob.username()));
     }
 
-//    @Test
-//    void validLoginValid() throws DatabaseException {
-//    }
-//    @Test
-//    void validLoginInvalid() throws DatabaseException {
-//    }
+    @Test
+    void validLoginValid() throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String userAddStatement =
+                    """
+                    INSERT INTO user_data (username, password, email) VALUES (?, ?, ?)
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(userAddStatement)) {
+                preparedStatement.setString(1, userBob.username());
+                preparedStatement.setString(2, BCrypt.hashpw(userBob.password(), BCrypt.gensalt()));
+                preparedStatement.setString(3, userBob.email());
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to create user in dataaccess: %s", ex.getMessage()));
+        }
+        assertTrue(dataAccess.validLogin(userBob.username(), userBob.password()));
+    }
+    @Test
+    void validLoginInvalid() throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String userAddStatement =
+                    """
+                    INSERT INTO user_data (username, password, email) VALUES (?, ?, ?)
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(userAddStatement)) {
+                preparedStatement.setString(1, userBob.username());
+                preparedStatement.setString(2, BCrypt.hashpw(userBob.password(), BCrypt.gensalt()));
+                preparedStatement.setString(3, userBob.email());
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to create user in dataaccess: %s", ex.getMessage()));
+        }
+        assertFalse(dataAccess.validLogin(userBob.username(), userBot.password()));
+    }
 
     @Test
     void createAuthValid() throws DatabaseException {
@@ -205,9 +236,21 @@ public class DataAccessTest {
             throw new DatabaseException(String.format("Unable to check if user exists in dataaccess: %s", ex.getMessage()));
         }
     }
-//    @Test
-//    void createAuthInvalid() throws DatabaseException {
-//    }
+    @Test
+    void createAuthInvalid() throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String statement =
+                    """
+                    DROP DATABASE %s
+                    """.formatted(DatabaseManager.getDatabaseName());
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to clear dataaccess: %s", ex.getMessage()));
+        }
+        assertThrows(DatabaseException.class, () -> dataAccess.createAuth(userBob.username()));
+    }
 
     @Test
     void authExistsValid() throws DatabaseException {
@@ -232,26 +275,162 @@ public class DataAccessTest {
         assertFalse(dataAccess.authExists("randomAuthToken"));
     }
 
-//    @Test
-//    void getUserValid() throws DatabaseException {
-//    }
-//    @Test
-//    void getUserInvalid() throws DatabaseException {
-//    }
-//
-//    @Test
-//    void logoutAuthValid() throws DatabaseException {
-//    }
-//    @Test
-//    void logoutAuthInvalid() throws DatabaseException {
-//    }
-//
-//    @Test
-//    void createGameValid() throws DatabaseException {
-//    }
-//    @Test
-//    void createGameInvalid() throws DatabaseException {
-//    }
+    @Test
+    void getUserValid() throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String authAddStatement =
+                    """
+                    INSERT INTO auth_data (authToken, username) VALUES (?, ?)
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(authAddStatement)) {
+                preparedStatement.setString(1, "randomAuthToken");
+                preparedStatement.setString(2, userBob.username());
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to create user in dataaccess: %s", ex.getMessage()));
+        }
+        assertEquals(userBob.username(), dataAccess.getUser("randomAuthToken"));
+    }
+    @Test
+    void getUserInvalid() throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String authAddStatement =
+                    """
+                    INSERT INTO auth_data (authToken, username) VALUES (?, ?)
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(authAddStatement)) {
+                preparedStatement.setString(1, "randomAuthToken");
+                preparedStatement.setString(2, userBob.username());
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to create user in dataaccess: %s", ex.getMessage()));
+        }
+        assertThrows(DatabaseException.class, () -> dataAccess.getUser("fakeAuthToken"));
+    }
+
+    @Test
+    void logoutAuthValid() throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String authAddStatement =
+                    """
+                    INSERT INTO auth_data (authToken, username) VALUES (?, ?)
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(authAddStatement)) {
+                preparedStatement.setString(1, "randomAuthToken");
+                preparedStatement.setString(2, userBob.username());
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to create user in dataaccess: %s", ex.getMessage()));
+        }
+
+        assertTrue(dataAccess.logoutAuth("randomAuthToken"));
+
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String authExistsStatement =
+                    """
+                    SELECT * FROM auth_data WHERE authToken = ?
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(authExistsStatement)) {
+                preparedStatement.setString(1, "randomAuthToken");
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    assertFalse(rs.next());
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to check if user exists in dataaccess: %s", ex.getMessage()));
+        }
+    }
+    @Test
+    void logoutAuthInvalid() throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String authAddStatement =
+                    """
+                    INSERT INTO auth_data (authToken, username) VALUES (?, ?)
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(authAddStatement)) {
+                preparedStatement.setString(1, "randomAuthToken");
+                preparedStatement.setString(2, userBob.username());
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to create user in dataaccess: %s", ex.getMessage()));
+        }
+
+        assertFalse(dataAccess.logoutAuth("fakeAuthToken"));
+
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String authExistsStatement =
+                    """
+                    SELECT * FROM auth_data WHERE authToken = ?
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(authExistsStatement)) {
+                preparedStatement.setString(1, "randomAuthToken");
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    assertTrue(rs.next());
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to check if user exists in dataaccess: %s", ex.getMessage()));
+        }
+    }
+
+    @Test
+    void createGameValid() throws DatabaseException {
+        int game_result_id = dataAccess.createGame(gameData.gameName());
+
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String gameExistsStatement =
+                    """
+                    SELECT * FROM game_data WHERE gameID = ?
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameExistsStatement)) {
+                preparedStatement.setInt(1, game_result_id);
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    assertTrue(rs.next());
+                    assertFalse(rs.next());
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to check if user exists in dataaccess: %s", ex.getMessage()));
+        }
+    }
+    @Test
+    void createGameInvalid() throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String gameAddStatement =
+                    """
+                    INSERT INTO game_data (gameID, gameName, game) VALUES (?, ?, ?)
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameAddStatement)) {
+                preparedStatement.setInt(1, 1);
+                preparedStatement.setString(2, gameData.gameName());
+                preparedStatement.setString(3, new Gson().toJson(gameData));
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to create user in dataaccess: %s", ex.getMessage()));
+        }
+
+        assertThrows(DatabaseException.class, () -> dataAccess.createGame("fakeGameName"));
+
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String gameExistsStatement =
+                    """
+                    SELECT * FROM game_data WHERE gameName = ?
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameExistsStatement)) {
+                preparedStatement.setString(1, "fakeGameName");
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    assertFalse(rs.next());
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to check if user exists in dataaccess: %s", ex.getMessage()));
+        }
+    }
 
     @Test
     void gameExistsValid() throws DatabaseException {
@@ -276,24 +455,172 @@ public class DataAccessTest {
         assertFalse(dataAccess.gameExists(gameData.gameID()));
     }
 
-//    @Test
-//    void joinGameValid() throws DatabaseException {
-//    }
-//    @Test
-//    void joinGameInvalid() throws DatabaseException {
-//    }
-//
-//    @Test
-//    void roleOpenValid() throws DatabaseException {
-//    }
-//    @Test
-//    void roleOpenInvalid() throws DatabaseException {
-//    }
-//
-//    @Test
-//    void listGamesValid() throws DatabaseException {
-//    }
-//    @Test
-//    void listGames() throws DatabaseException {
-//    }
+    @Test
+    void joinGameValid() throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String gameAddStatement =
+                    """
+                    INSERT INTO game_data (gameID, gameName, game) VALUES (?, ?, ?)
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameAddStatement)) {
+                preparedStatement.setInt(1, gameData.gameID());
+                preparedStatement.setString(2, gameData.gameName());
+                preparedStatement.setString(3, new Gson().toJson(gameData));
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to create user in dataaccess: %s", ex.getMessage()));
+        }
+
+        dataAccess.joinGame(userBob.username(), ChessGame.TeamColor.WHITE, gameData.gameID());
+        dataAccess.joinGame(userBot.username(), ChessGame.TeamColor.BLACK, gameData.gameID());
+        GameData newGameData = new GameData(gameData.gameID(), userBob.username(), userBot.username(), gameData.gameName(), gameData.game());
+
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String gameExistsStatement =
+                    """
+                    SELECT * FROM game_data WHERE gameID = ? AND whiteUsername = ? AND blackUsername = ? AND gameName = ? AND game = ?
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameExistsStatement)) {
+                preparedStatement.setInt(1, gameData.gameID());
+                preparedStatement.setString(2, userBob.username());
+                preparedStatement.setString(3, userBot.username());
+                preparedStatement.setString(4, gameData.gameName());
+                preparedStatement.setString(5, new Gson().toJson(newGameData));
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    assertTrue(rs.next());
+                    assertFalse(rs.next());
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to check if user exists in dataaccess: %s", ex.getMessage()));
+        }
+
+        dataAccess.joinGame(userBob.username(), ChessGame.TeamColor.BLACK, gameData.gameID());
+        newGameData = new GameData(gameData.gameID(), userBob.username(), userBob.username(), gameData.gameName(), gameData.game());
+
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String gameExistsStatement =
+                    """
+                    SELECT * FROM game_data WHERE gameID = ? AND whiteUsername = ? AND blackUsername = ? AND gameName = ? AND game = ?
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameExistsStatement)) {
+                preparedStatement.setInt(1, gameData.gameID());
+                preparedStatement.setString(2, userBob.username());
+                preparedStatement.setString(3, userBob.username());
+                preparedStatement.setString(4, gameData.gameName());
+                preparedStatement.setString(5, new Gson().toJson(newGameData));
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    assertTrue(rs.next());
+                    assertFalse(rs.next());
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to check if user exists in dataaccess: %s", ex.getMessage()));
+        }
+    }
+    @Test
+    void joinGameInvalid() throws DatabaseException {
+        assertThrows(DatabaseException.class, () -> dataAccess.joinGame(userBob.username(), ChessGame.TeamColor.WHITE, gameData.gameID()));
+
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String gameAddStatement =
+                    """
+                    INSERT INTO game_data (gameID, gameName, game) VALUES (?, ?, ?)
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameAddStatement)) {
+                preparedStatement.setInt(1, gameData.gameID());
+                preparedStatement.setString(2, gameData.gameName());
+                preparedStatement.setString(3, new Gson().toJson(gameData));
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to create user in dataaccess: %s", ex.getMessage()));
+        }
+
+        assertThrows(DatabaseException.class, () -> dataAccess.joinGame(userBob.username(), ChessGame.TeamColor.WHITE, gameData.gameID()+1));
+    }
+
+    @Test
+    void roleOpenValid() throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String gameAddStatement =
+                    """
+                    INSERT INTO game_data (gameID, blackUsername, gameName, game) VALUES (?, ?, ?, ?)
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameAddStatement)) {
+                preparedStatement.setInt(1, gameData.gameID());
+                preparedStatement.setString(2, userBob.username());
+                preparedStatement.setString(3, gameData.gameName());
+                preparedStatement.setString(4, new Gson().toJson(gameData));
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to create user in dataaccess: %s", ex.getMessage()));
+        }
+        assertTrue(dataAccess.roleOpen(gameData.gameID(), ChessGame.TeamColor.WHITE));
+    }
+    @Test
+    void roleOpenInvalid() throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String gameAddStatement =
+                    """
+                    INSERT INTO game_data (gameID, blackUsername, gameName, game) VALUES (?, ?, ?, ?)
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameAddStatement)) {
+                preparedStatement.setInt(1, gameData.gameID());
+                preparedStatement.setString(2, userBob.username());
+                preparedStatement.setString(3, gameData.gameName());
+                preparedStatement.setString(4, new Gson().toJson(gameData));
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to create user in dataaccess: %s", ex.getMessage()));
+        }
+        assertFalse(dataAccess.roleOpen(gameData.gameID(), ChessGame.TeamColor.BLACK));
+    }
+
+    @Test
+    void listGamesValid() throws DatabaseException {
+        assertEquals(0, dataAccess.listGames().size());
+        GameData newGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), userBob.username(), gameData.gameName(), gameData.game());
+
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String gameAddStatement =
+                    """
+                    INSERT INTO game_data (gameID, blackUsername, gameName, game) VALUES (?, ?, ?, ?)
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameAddStatement)) {
+                preparedStatement.setInt(1, newGameData.gameID());
+                preparedStatement.setString(2, newGameData.blackUsername());
+                preparedStatement.setString(3, newGameData.gameName());
+                preparedStatement.setString(4, new Gson().toJson(newGameData));
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to create user in dataaccess: %s", ex.getMessage()));
+        }
+        ArrayList<GameData> listedGames = dataAccess.listGames();
+        assertEquals(1, listedGames.size());
+        assertEquals(gameData.gameID(), listedGames.getFirst().gameID());
+        assertNull(listedGames.getFirst().whiteUsername());
+        assertEquals(userBob.username(), listedGames.getFirst().blackUsername());
+        assertEquals(gameData.gameName(), listedGames.getFirst().gameName());
+        assertEquals(gameData.game(), listedGames.getFirst().game());
+    }
+    @Test
+    void listGames() throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String statement =
+                    """
+                    DROP DATABASE %s
+                    """.formatted(DatabaseManager.getDatabaseName());
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to clear dataaccess: %s", ex.getMessage()));
+        }
+        assertThrows(DatabaseException.class, () -> dataAccess.listGames());
+    }
 }
