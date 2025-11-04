@@ -340,40 +340,12 @@ public class DataAccessTest {
 
     @Test
     void roleOpenValid() throws DatabaseException {
-        try (Connection connection = DatabaseManager.getConnection()) {
-            String gameAddStatement =
-                    """
-                    INSERT INTO game_data (gameID, blackUsername, gameName, game) VALUES (?, ?, ?, ?)
-                    """;
-            try (PreparedStatement preparedStatement = connection.prepareStatement(gameAddStatement)) {
-                preparedStatement.setInt(1, gameData.gameID());
-                preparedStatement.setString(2, userBob.username());
-                preparedStatement.setString(3, gameData.gameName());
-                preparedStatement.setString(4, new Gson().toJson(gameData));
-                preparedStatement.executeUpdate();
-            }
-        } catch (SQLException ex) {
-            throw new DatabaseException(String.format("Unable to create user in dataaccess: %s", ex.getMessage()));
-        }
+        addGameBobBlack();
         assertTrue(dataAccess.roleOpen(gameData.gameID(), ChessGame.TeamColor.WHITE));
     }
     @Test
     void roleOpenInvalid() throws DatabaseException {
-        try (Connection connection = DatabaseManager.getConnection()) {
-            String gameAddStatement =
-                    """
-                    INSERT INTO game_data (gameID, blackUsername, gameName, game) VALUES (?, ?, ?, ?)
-                    """;
-            try (PreparedStatement preparedStatement = connection.prepareStatement(gameAddStatement)) {
-                preparedStatement.setInt(1, gameData.gameID());
-                preparedStatement.setString(2, userBob.username());
-                preparedStatement.setString(3, gameData.gameName());
-                preparedStatement.setString(4, new Gson().toJson(gameData));
-                preparedStatement.executeUpdate();
-            }
-        } catch (SQLException ex) {
-            throw new DatabaseException(String.format("Unable to create user in dataaccess: %s", ex.getMessage()));
-        }
+        addGameBobBlack();
         assertFalse(dataAccess.roleOpen(gameData.gameID(), ChessGame.TeamColor.BLACK));
     }
 
@@ -454,6 +426,24 @@ public class DataAccessTest {
                 preparedStatement.setInt(1, gameData.gameID());
                 preparedStatement.setString(2, gameData.gameName());
                 preparedStatement.setString(3, new Gson().toJson(gameData));
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to create user in dataaccess: %s", ex.getMessage()));
+        }
+    }
+
+    private void addGameBobBlack() throws DatabaseException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String gameAddStatement =
+                    """
+                    INSERT INTO game_data (gameID, blackUsername, gameName, game) VALUES (?, ?, ?, ?)
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameAddStatement)) {
+                preparedStatement.setInt(1, gameData.gameID());
+                preparedStatement.setString(2, userBob.username());
+                preparedStatement.setString(3, gameData.gameName());
+                preparedStatement.setString(4, new Gson().toJson(gameData));
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException ex) {
