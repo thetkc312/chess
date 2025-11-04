@@ -146,7 +146,7 @@ public class Server {
         String requestJson = ctx.body();
         JoinBody joinBody = serializer.fromJson(requestJson, JoinBody.class);
         try {
-            userService.joinGame(authToken, joinBody.gameID, joinBody.playerColor);
+            userService.join(authToken, joinBody.gameID, joinBody.playerColor);
 
             ctx.result();
         } catch (BadRequestException e) {

@@ -68,15 +68,12 @@ public class MySqlDataAccess implements DataAccess {
             try (PreparedStatement preparedStatement = connection.prepareStatement(userExistsStatement)) {
                 preparedStatement.setString(1, username);
                 try (ResultSet rs = preparedStatement.executeQuery()) {
-                    if (rs.next()) {
-                        return true;
-                    }
+                    return rs.next();
                 }
             }
         } catch (SQLException ex) {
             throw new DatabaseException(String.format("Unable to check if user exists in database: %s", ex.getMessage()));
         }
-        return false;
     }
 
     @Override
@@ -90,11 +87,7 @@ public class MySqlDataAccess implements DataAccess {
                 preparedStatement.setString(1, username);
                 preparedStatement.setString(2, password);
                 try (ResultSet rs = preparedStatement.executeQuery()) {
-                    if (rs.next()) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+                    return rs.next();
                 }
             }
         } catch (SQLException ex) {
@@ -150,29 +143,37 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public String getUser(String authToken) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
-            // TODO: Implement
-            String statement = "";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
-                preparedStatement.executeUpdate();
+            String userGetStatement =
+                    """
+                    SELECT username FROM auth_data WHERE authToken = ?
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(userGetStatement)) {
+                preparedStatement.setString(1, authToken);
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    rs.next();
+                    return rs.getString("username");
+                }
             }
         } catch (SQLException ex) {
             throw new DatabaseException(String.format("Unable to check if user is in database: %s", ex.getMessage()));
         }
-        return "";
     }
 
     @Override
     public boolean logoutAuth(String authToken) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
-            // TODO: Implement
-            String statement = "";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
-                preparedStatement.executeUpdate();
+            String authDeleteStatement =
+                    """
+                    DELETE FROM auth_data WHERE authToken = ?
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(authDeleteStatement)) {
+                preparedStatement.setString(1, authToken);
+                int rowsAffected = preparedStatement.executeUpdate();
+                return rowsAffected > 0;
             }
         } catch (SQLException ex) {
             throw new DatabaseException(String.format("Unable to log user out of database: %s", ex.getMessage()));
         }
-        return false;
     }
 
     @Override

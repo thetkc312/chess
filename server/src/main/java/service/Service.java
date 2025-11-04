@@ -66,7 +66,7 @@ public class Service {
         return gameID;
     }
 
-    public void joinGame(String authToken, int gameID, ChessGame.TeamColor teamColor)
+    public void join(String authToken, int gameID, ChessGame.TeamColor teamColor)
             throws BadRequestException, InvalidCredentialsException, AlreadyTakenException, DatabaseException {
         if (invalidField(gameID) || invalidField(teamColor) || !dataAccess.gameExists(gameID)) {
             throw new BadRequestException("400: Malformed information for joining game.");
