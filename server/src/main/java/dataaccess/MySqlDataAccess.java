@@ -7,6 +7,7 @@ import model.UserData;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -37,14 +38,33 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public boolean createUser(UserData user) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
-            String statement = "";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+            String userExistsStatement =
+                    """
+                    SELECT * FROM user_data WHERE username = ?
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(userExistsStatement)) {
+                preparedStatement.setString(1, user.username());
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    if (rs.next()) {
+                        return false;
+                    }
+                }
+            }
+
+            String userAddStatement =
+                    """
+                    INSERT INTO user_data (username, password, email) VALUES (?, ?, ?)
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(userAddStatement)) {
+                preparedStatement.setString(1, user.username());
+                preparedStatement.setString(2, user.email());
+                preparedStatement.setString(3, user.password());
                 preparedStatement.executeUpdate();
+                return true;
             }
         } catch (SQLException ex) {
             throw new DatabaseException(String.format("Unable to create user in database: %s", ex.getMessage()));
         }
-        return false;
     }
 
     @Override
