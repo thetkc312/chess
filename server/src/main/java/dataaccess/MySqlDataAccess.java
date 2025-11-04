@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -51,7 +52,7 @@ public class MySqlDataAccess implements DataAccess {
                     """;
             try (PreparedStatement preparedStatement = connection.prepareStatement(userAddStatement)) {
                 preparedStatement.setString(1, user.username());
-                preparedStatement.setString(2, user.password());
+                preparedStatement.setString(2, BCrypt.hashpw(user.password(), BCrypt.gensalt()));
                 preparedStatement.setString(3, user.email());
                 preparedStatement.executeUpdate();
                 return true;
@@ -84,13 +85,16 @@ public class MySqlDataAccess implements DataAccess {
         try (Connection connection = DatabaseManager.getConnection()) {
             String userExistsStatement =
                     """
-                    SELECT * FROM user_data WHERE username = ? AND password = ?
+                    SELECT password FROM user_data WHERE username = ?
                     """;
             try (PreparedStatement preparedStatement = connection.prepareStatement(userExistsStatement)) {
                 preparedStatement.setString(1, username);
-                preparedStatement.setString(2, password);
                 try (ResultSet rs = preparedStatement.executeQuery()) {
-                    return rs.next();
+                    if (rs.next()) {
+                        String hashedPassword = rs.getString("password");
+                        return BCrypt.checkpw(password, hashedPassword);
+                    }
+                    return false;
                 }
             }
         } catch (SQLException ex) {
