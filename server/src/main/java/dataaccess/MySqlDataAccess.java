@@ -37,20 +37,10 @@ public class MySqlDataAccess implements DataAccess {
 
     @Override
     public boolean createUser(UserData user) throws DatabaseException {
+        if (this.userExists(user.username())) {
+            return false;
+        }
         try (Connection connection = DatabaseManager.getConnection()) {
-            String userExistsStatement =
-                    """
-                    SELECT * FROM user_data WHERE username = ?
-                    """;
-            try (PreparedStatement preparedStatement = connection.prepareStatement(userExistsStatement)) {
-                preparedStatement.setString(1, user.username());
-                try (ResultSet rs = preparedStatement.executeQuery()) {
-                    if (rs.next()) {
-                        return false;
-                    }
-                }
-            }
-
             String userAddStatement =
                     """
                     INSERT INTO user_data (username, password, email) VALUES (?, ?, ?)
@@ -70,9 +60,17 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public boolean userExists(String username) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
-            String statement = "";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
-                preparedStatement.executeUpdate();
+            String userExistsStatement =
+                    """
+                    SELECT * FROM user_data WHERE username = ?
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(userExistsStatement)) {
+                preparedStatement.setString(1, username);
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    if (rs.next()) {
+                        return true;
+                    }
+                }
             }
         } catch (SQLException ex) {
             throw new DatabaseException(String.format("Unable to check if user exists in database: %s", ex.getMessage()));
