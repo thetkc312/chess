@@ -16,10 +16,11 @@ import java.util.UUID;
 public class MySqlDataAccess implements DataAccess {
 
     private String databaseName;
-    private int gameID = 1;
+    private int gameID;
 
     public MySqlDataAccess() throws DataAccessException {
         initializeDatabase();
+        gameID = 0;
     }
 
     @Override
@@ -183,13 +184,14 @@ public class MySqlDataAccess implements DataAccess {
         try (Connection connection = DatabaseManager.getConnection()) {
             String gameAddStatement =
                     """
-                    INSERT INTO game_data (gameName, game) VALUES (?, ?)
+                    INSERT INTO game_data (gameID, gameName, game) VALUES (?, ?, ?)
                     """;
             try (PreparedStatement preparedStatement = connection.prepareStatement(gameAddStatement)) {
                 gameID += 1;
                 GameData gameData = new GameData(gameID, null, null, gameName, new ChessGame());
-                preparedStatement.setString(1, gameData.gameName());
-                preparedStatement.setString(2, new Gson().toJson(gameData));
+                preparedStatement.setInt(1, gameID);
+                preparedStatement.setString(2, gameData.gameName());
+                preparedStatement.setString(3, new Gson().toJson(gameData));
                 preparedStatement.executeUpdate();
                 return gameID;
             }
@@ -201,10 +203,17 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public boolean gameExists(int gameID) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
-            // TODO: Implement
-            String statement = "";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
-                preparedStatement.executeUpdate();
+            String gameExistsStatement =
+                    """
+                    SELECT * FROM game_data WHERE gameID = ?
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameExistsStatement)) {
+                preparedStatement.setInt(1, gameID);
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    if (rs.next()) {
+                        return true;
+                    }
+                }
             }
         } catch (SQLException ex) {
             throw new DatabaseException(String.format("Unable to check if game exists in database: %s", ex.getMessage()));
@@ -215,9 +224,39 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public void joinGame(String username, ChessGame.TeamColor teamColor, int gameID) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
-            // TODO: Implement
-            String statement = "";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+            String gameFindStatement =
+                    """
+                    SELECT game FROM game_data WHERE gameID = ?
+                    """;
+            GameData gameData;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameFindStatement)) {
+                preparedStatement.setInt(1, gameID);
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    rs.next();
+                    String gameJson = rs.getString("game");
+                    gameData = new Gson().fromJson(gameJson, GameData.class);
+                }
+            }
+
+            String colorUser;
+            GameData updatedGameData;
+            if (teamColor == ChessGame.TeamColor.WHITE) {
+                colorUser = "whiteUsername";
+                updatedGameData = new GameData(gameData.gameID(), username, gameData.blackUsername(), gameData.gameName(), gameData.game());
+            } else {
+                colorUser = "blackUsername";
+                updatedGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), username, gameData.gameName(), gameData.game());
+            }
+
+
+            String gameUpdateStatement =
+                    """
+                    UPDATE game_data SET %s = ?, game = ? WHERE gameID = ?
+                    """.formatted(colorUser);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameUpdateStatement)) {
+                preparedStatement.setString(1, username);
+                preparedStatement.setString(2, new Gson().toJson(updatedGameData));
+                preparedStatement.setInt(3, gameID);
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException ex) {
@@ -229,29 +268,49 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public boolean roleOpen(int gameID, ChessGame.TeamColor teamColor) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
-            // TODO: Implement
-            String statement = "";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
-                preparedStatement.executeUpdate();
+            String colorUser;
+            if (teamColor == ChessGame.TeamColor.WHITE) {
+                colorUser = "whiteUsername";
+            } else {
+                colorUser = "blackUsername";
+            }
+            String roleOpenStatement =
+                    """
+                    SELECT %s FROM game_data WHERE gameID = ?
+                    """.formatted(colorUser);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(roleOpenStatement)) {
+                preparedStatement.setInt(1, gameID);
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    rs.next();
+                    rs.getString(colorUser);
+                    return rs.wasNull();
+                }
             }
         } catch (SQLException ex) {
             throw new DatabaseException(String.format("Unable to check if role is open in database: %s", ex.getMessage()));
         }
-        return false;
     }
 
     @Override
     public ArrayList<GameData> listGames() throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
-            // TODO: Implement
-            String statement = "";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
-                preparedStatement.executeUpdate();
+            String gameListStatement =
+                    """
+                    SELECT game FROM game_data
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameListStatement)) {
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    ArrayList<GameData> gameList = new ArrayList<>();
+                    while (rs.next()) {
+                        String gameJson = rs.getString("game");
+                        gameList.add(new Gson().fromJson(gameJson, GameData.class));
+                    }
+                    return gameList;
+                }
             }
         } catch (SQLException ex) {
             throw new DatabaseException(String.format("Unable to list games in database: %s", ex.getMessage()));
         }
-        return null;
     }
 
     private void initializeDatabase() throws DatabaseException {
@@ -288,7 +347,7 @@ public class MySqlDataAccess implements DataAccess {
     private final String[] gameTableTemplate = {
             """
             CREATE TABLE IF NOT EXISTS  game_data (
-              `gameID` int NOT NULL AUTO_INCREMENT,
+              `gameID` int NOT NULL,
               `whiteUsername` varchar(256),
               `blackUsername` varchar(256),
               `gameName` varchar(256) NOT NULL,
