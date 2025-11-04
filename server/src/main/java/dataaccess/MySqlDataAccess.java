@@ -10,6 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class MySqlDataAccess implements DataAccess {
 
@@ -94,22 +95,41 @@ public class MySqlDataAccess implements DataAccess {
     @Override
     public AuthData createAuth(String username) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
-            String statement = "";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+            String authAddStatement =
+                    """
+                    INSERT INTO auth_data (authToken, username) VALUES (?, ?)
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(authAddStatement)) {
+                AuthData authData = new AuthData(username, generateAuthToken());
+                preparedStatement.setString(1, authData.authToken());
+                preparedStatement.setString(2, authData.username());
                 preparedStatement.executeUpdate();
+                return authData;
             }
         } catch (SQLException ex) {
             throw new DatabaseException(String.format("Unable to add authentication entry to database: %s", ex.getMessage()));
         }
-        return null;
     }
+
+    private String generateAuthToken() {
+        return UUID.randomUUID().toString();
+    }
+
 
     @Override
     public boolean authExists(String authToken) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
-            String statement = "";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
-                preparedStatement.executeUpdate();
+            String authExistsStatement =
+                    """
+                    SELECT * FROM auth_data WHERE authToken = ?
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(authExistsStatement)) {
+                preparedStatement.setString(1, authToken);
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    if (rs.next()) {
+                        return true;
+                    }
+                }
             }
         } catch (SQLException ex) {
             throw new DatabaseException(String.format("Unable to check if authentication token database: %s", ex.getMessage()));
