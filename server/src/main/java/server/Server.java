@@ -45,7 +45,7 @@ public class Server {
         javalinServer.delete("session", (Context ctx) -> logout(ctx));
         // Lists all the games in the dataaccess. This API does not take a request body. The
         // response JSON lists all the games. An authToken is required to call this endpoint.
-        javalinServer.get("game", (Context ctx) -> getGames(ctx));
+        javalinServer.get("game", (Context ctx) -> listGames(ctx));
         // Create a new Chess Game. The request body must contain a name for the game. The response JSON contains the ID of
         // created game, or if failed, an error message describing the reason. An authToken is required to call this endpoint.
         javalinServer.post("game", (Context ctx) -> createGame(ctx));
@@ -106,7 +106,7 @@ public class Server {
         }
     }
 
-    private void getGames(Context ctx) {
+    private void listGames(Context ctx) {
         Gson serializer = new Gson();
         String authToken = ctx.header("authorization");
         try {
