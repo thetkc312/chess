@@ -9,6 +9,7 @@ public class ResponseException extends RuntimeException {
         UNAUTHORIZED,
         ALREADY_TAKEN,
         SERVER_ERROR,
+        NO_CONNECTION,
         UNKNOWN_ERROR
     }
 
