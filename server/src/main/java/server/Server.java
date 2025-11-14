@@ -9,7 +9,9 @@ import model.UserData;
 import io.javalin.*;
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
+import server.EndpointBodies.CreateGameBody;
 import server.EndpointBodies.JoinBody;
+import server.EndpointBodies.LoginBody;
 import service.BadRequestException;
 import service.Service;
 
@@ -79,9 +81,9 @@ public class Server {
         Gson serializer = new Gson();
         String requestJson = ctx.body();
 
-        UserData user = serializer.fromJson(requestJson, UserData.class);
+        LoginBody loginBody = serializer.fromJson(requestJson, LoginBody.class);
         try {
-            AuthData authData = userService.login(user);
+            AuthData authData = userService.login(loginBody);
 
             ctx.result(serializer.toJson(authData));
         } catch (BadRequestException e) {
@@ -126,9 +128,10 @@ public class Server {
         Gson serializer = new Gson();
         String authToken = ctx.header("authorization");
         String requestJson = ctx.body();
-        GameData emptyGame = serializer.fromJson(requestJson, GameData.class);
+
+        CreateGameBody createGameBody = serializer.fromJson(requestJson, CreateGameBody.class);
         try {
-            int gameID = userService.create(authToken, emptyGame.gameName());
+            int gameID = userService.create(authToken, createGameBody);
 
             var successResponse = Map.of("gameID", gameID);
             ctx.result(serializer.toJson(successResponse));

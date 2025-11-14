@@ -2,5 +2,5 @@ package server.EndpointBodies;
 
 import chess.ChessGame;
 
-public record LoginBody(String username, String AuthToken) {
+public record LoginBody(String username, String password) {
 }

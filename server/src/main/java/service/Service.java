@@ -5,7 +5,9 @@ import dataaccess.*;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
+import server.EndpointBodies.CreateGameBody;
 import server.EndpointBodies.JoinBody;
+import server.EndpointBodies.LoginBody;
 import server.Server;
 
 import java.util.ArrayList;
@@ -29,7 +31,7 @@ public class Service {
         return dataAccess.createAuth(user.username());
     }
 
-    public AuthData login(UserData user)
+    public AuthData login(LoginBody user)
             throws BadRequestException, InvalidCredentialsException, DatabaseException {
         if (invalidField(user.username()) || invalidField(user.password())) {
             throw new BadRequestException("400: Malformed information for user login.");
@@ -56,15 +58,15 @@ public class Service {
         return dataAccess.listGames();
     }
 
-    public int create(String authToken, String gameName)
+    public int create(String authToken, CreateGameBody createGameBody)
             throws BadRequestException, InvalidCredentialsException, DatabaseException {
-        if (invalidField(gameName)) {
+        if (invalidField(createGameBody.gameName())) {
             throw new BadRequestException("400: Malformed information for game creation (Game Name).");
         }
         if (!dataAccess.authExists(authToken)) {
             throw new InvalidCredentialsException("401: Authentication token does not match a known user for creating a game.");
         }
-        int gameID = dataAccess.createGame(gameName);
+        int gameID = dataAccess.createGame(createGameBody.gameName());
         return gameID;
     }
 

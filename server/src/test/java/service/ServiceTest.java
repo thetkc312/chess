@@ -8,7 +8,9 @@ import model.UserData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import server.EndpointBodies.CreateGameBody;
 import server.EndpointBodies.JoinBody;
+import server.EndpointBodies.LoginBody;
 
 import java.util.ArrayList;
 
@@ -66,7 +68,8 @@ public class ServiceTest {
     @Test
     void loginValid() throws BadRequestException, InvalidCredentialsException, DataAccessException {
         dataAccess.createUser(userBob);
-        AuthData authData = service.login(userBob);
+        LoginBody userBobLogin = new LoginBody(userBob.username(), userBob.password());
+        AuthData authData = service.login(userBobLogin);
         assertNotNull(authData);
         assertNotNull(authData.username());
         assertNotNull(authData.authToken());
@@ -75,7 +78,7 @@ public class ServiceTest {
         assertTrue(dataAccess.authExists(authData.authToken()));
         assertTrue(dataAccess.validLogin(userBob.username(), userBob.password()));
 
-        AuthData authData1 = service.login(userBob);
+        AuthData authData1 = service.login(userBobLogin);
         assertNotNull(authData1);
         assertNotNull(authData1.username());
         assertNotNull(authData1.authToken());
@@ -88,10 +91,11 @@ public class ServiceTest {
     }
     @Test
     void loginInvalid() throws BadRequestException, InvalidCredentialsException, DataAccessException {
-        assertThrows(BadRequestException.class, () -> service.login(userBad));
+        LoginBody userBadLogin = new LoginBody(userBad.username(), userBad.password());
+        assertThrows(BadRequestException.class, () -> service.login(userBadLogin));
         dataAccess.createUser(userBob);
-        UserData fakeUser = new UserData(userBob.username(), userBob.email(), "Wrong");
-        assertThrows(InvalidCredentialsException.class, () -> service.login(fakeUser));
+        LoginBody fakeUserLogin = new LoginBody(userBob.username(), "Wrong");
+        assertThrows(InvalidCredentialsException.class, () -> service.login(fakeUserLogin));
     }
 
     @Test
@@ -139,15 +143,15 @@ public class ServiceTest {
     void createValid() throws BadRequestException, InvalidCredentialsException, DataAccessException {
         dataAccess.createUser(userBob);
         AuthData authData = dataAccess.createAuth(userBob.username());
-        int gameID = service.create(authData.authToken(), userBob.username().concat("Game"));
+        int gameID = service.create(authData.authToken(), new CreateGameBody(userBob.username().concat("Game")));
         assertTrue(dataAccess.gameExists(gameID));
     }
     @Test
     void createInvalid() throws BadRequestException, InvalidCredentialsException, DataAccessException {
         dataAccess.createUser(userBob);
         AuthData authData = dataAccess.createAuth(userBob.username());
-        assertThrows(BadRequestException.class, () -> service.create(authData.authToken(), ""));
-        assertThrows(InvalidCredentialsException.class, () -> service.create("Wrong", userBob.username().concat("Game")));
+        assertThrows(BadRequestException.class, () -> service.create(authData.authToken(), new CreateGameBody("")));
+        assertThrows(InvalidCredentialsException.class, () -> service.create("Wrong", new CreateGameBody(userBob.username().concat("Game"))));
         assertEquals(0, dataAccess.listGames().size());
     }
 
