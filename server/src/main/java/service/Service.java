@@ -5,6 +5,8 @@ import dataaccess.*;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
+import server.EndpointBodies.JoinBody;
+import server.Server;
 
 import java.util.ArrayList;
 
@@ -66,19 +68,19 @@ public class Service {
         return gameID;
     }
 
-    public void join(String authToken, int gameID, ChessGame.TeamColor teamColor)
+    public void join(String authToken, JoinBody joinBody)
             throws BadRequestException, InvalidCredentialsException, AlreadyTakenException, DatabaseException {
-        if (invalidField(gameID) || invalidField(teamColor) || !dataAccess.gameExists(gameID)) {
+        if (invalidField(joinBody.gameID()) || invalidField(joinBody.playerColor()) || !dataAccess.gameExists(joinBody.gameID())) {
             throw new BadRequestException("400: Malformed information for joining game.");
         }
         if (!dataAccess.authExists(authToken)) {
             throw new InvalidCredentialsException("401: Authentication token does not match a known user for joining a game.");
         }
-        if (!dataAccess.roleOpen(gameID, teamColor)) {
+        if (!dataAccess.roleOpen(joinBody.gameID(), joinBody.playerColor())) {
             throw new AlreadyTakenException("403: Game role (Black/White) already taken.");
         }
         String username = dataAccess.getUser(authToken);
-        dataAccess.joinGame(username, teamColor, gameID);
+        dataAccess.joinGame(username, joinBody.playerColor(), joinBody.gameID());
     }
 
     public void clear()

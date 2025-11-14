@@ -9,6 +9,7 @@ import model.UserData;
 import io.javalin.*;
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
+import server.EndpointBodies.JoinBody;
 import service.BadRequestException;
 import service.Service;
 
@@ -146,7 +147,7 @@ public class Server {
         String requestJson = ctx.body();
         JoinBody joinBody = serializer.fromJson(requestJson, JoinBody.class);
         try {
-            userService.join(authToken, joinBody.gameID, joinBody.playerColor);
+            userService.join(authToken, joinBody);
 
             ctx.result();
         } catch (BadRequestException e) {
@@ -160,10 +161,6 @@ public class Server {
         }
     }
 
-    private record JoinBody(ChessGame.TeamColor playerColor, int gameID) {
-    }
-
-    ;
 
     private void deleteDB(Context ctx) {
         try {

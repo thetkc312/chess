@@ -8,6 +8,7 @@ import model.UserData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import server.EndpointBodies.JoinBody;
 
 import java.util.ArrayList;
 
@@ -155,10 +156,10 @@ public class ServiceTest {
         dataAccess.createUser(userBob);
         AuthData authData = dataAccess.createAuth(userBob.username());
         int gameID = dataAccess.createGame(userBob.username().concat("Game"));
-        service.join(authData.authToken(), gameID, ChessGame.TeamColor.WHITE);
+        service.join(authData.authToken(), new JoinBody(ChessGame.TeamColor.WHITE, gameID));
         assertEquals(userBob.username(), dataAccess.listGames().getFirst().whiteUsername());
         assertNull(dataAccess.listGames().getFirst().blackUsername());
-        service.join(authData.authToken(), gameID, ChessGame.TeamColor.BLACK);
+        service.join(authData.authToken(), new JoinBody(ChessGame.TeamColor.BLACK, gameID));
         assertEquals(userBob.username(), dataAccess.listGames().getFirst().blackUsername());
     }
     @Test
@@ -166,10 +167,10 @@ public class ServiceTest {
         dataAccess.createUser(userBob);
         AuthData authData = dataAccess.createAuth(userBob.username());
         int gameID = dataAccess.createGame(userBob.username().concat("Game"));
-        assertThrows(BadRequestException.class, () -> service.join(authData.authToken(), 0, ChessGame.TeamColor.WHITE));
-        assertThrows(BadRequestException.class, () -> service.join(authData.authToken(), gameID, null));
+        assertThrows(BadRequestException.class, () -> service.join(authData.authToken(), new JoinBody(ChessGame.TeamColor.WHITE, 0)));
+        assertThrows(BadRequestException.class, () -> service.join(authData.authToken(), new JoinBody(null, gameID)));
         assertTrue(dataAccess.roleOpen(gameID, ChessGame.TeamColor.WHITE));
-        assertThrows(InvalidCredentialsException.class, () -> service.join("Wrong", gameID, ChessGame.TeamColor.WHITE));
+        assertThrows(InvalidCredentialsException.class, () -> service.join("Wrong", new JoinBody(ChessGame.TeamColor.WHITE, gameID)));
         assertTrue(dataAccess.roleOpen(gameID, ChessGame.TeamColor.WHITE));
     }
 
