@@ -27,12 +27,12 @@ public class ServiceTest {
         userBob = new UserData("Bob", "bob@bob.bob", "bigboybob");
         userBot = new UserData("Bot", "bot@bot.bot", "bigboybot");
         userBad = new UserData("Bad", "bad@bad.bad", "");
+        gameName = "BobBot";
     }
 
     @BeforeEach
     public void reset() {
         //gameData = new GameData(606, null, null, "BobBot", new ChessGame());
-        gameName = "BobBot";
         dataAccess = new MemoryDataAccess();
         service = new Service(dataAccess);
     }
@@ -151,25 +151,25 @@ public class ServiceTest {
     }
 
     @Test
-    void joinGameValid() throws BadRequestException, InvalidCredentialsException, AlreadyTakenException, DataAccessException {
+    void joinValid() throws BadRequestException, InvalidCredentialsException, AlreadyTakenException, DataAccessException {
         dataAccess.createUser(userBob);
         AuthData authData = dataAccess.createAuth(userBob.username());
         int gameID = dataAccess.createGame(userBob.username().concat("Game"));
-        service.joinGame(authData.authToken(), gameID, ChessGame.TeamColor.WHITE);
+        service.join(authData.authToken(), gameID, ChessGame.TeamColor.WHITE);
         assertEquals(userBob.username(), dataAccess.listGames().getFirst().whiteUsername());
         assertNull(dataAccess.listGames().getFirst().blackUsername());
-        service.joinGame(authData.authToken(), gameID, ChessGame.TeamColor.BLACK);
+        service.join(authData.authToken(), gameID, ChessGame.TeamColor.BLACK);
         assertEquals(userBob.username(), dataAccess.listGames().getFirst().blackUsername());
     }
     @Test
-    void joinGameInvalid() throws BadRequestException, InvalidCredentialsException, AlreadyTakenException, DataAccessException {
+    void joinInvalid() throws BadRequestException, InvalidCredentialsException, AlreadyTakenException, DataAccessException {
         dataAccess.createUser(userBob);
         AuthData authData = dataAccess.createAuth(userBob.username());
         int gameID = dataAccess.createGame(userBob.username().concat("Game"));
-        assertThrows(BadRequestException.class, () -> service.joinGame(authData.authToken(), 0, ChessGame.TeamColor.WHITE));
-        assertThrows(BadRequestException.class, () -> service.joinGame(authData.authToken(), gameID, null));
+        assertThrows(BadRequestException.class, () -> service.join(authData.authToken(), 0, ChessGame.TeamColor.WHITE));
+        assertThrows(BadRequestException.class, () -> service.join(authData.authToken(), gameID, null));
         assertTrue(dataAccess.roleOpen(gameID, ChessGame.TeamColor.WHITE));
-        assertThrows(InvalidCredentialsException.class, () -> service.joinGame("Wrong", gameID, ChessGame.TeamColor.WHITE));
+        assertThrows(InvalidCredentialsException.class, () -> service.join("Wrong", gameID, ChessGame.TeamColor.WHITE));
         assertTrue(dataAccess.roleOpen(gameID, ChessGame.TeamColor.WHITE));
     }
 
