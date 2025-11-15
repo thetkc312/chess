@@ -1,4 +1,4 @@
-package endpointbodies;
+package endpointrequests;
 
 import chess.ChessGame;
 

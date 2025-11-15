@@ -1,4 +1,4 @@
-package server;
+package endpointresponses;
 
 public record CreateGameResponse (int gameID) {
 }

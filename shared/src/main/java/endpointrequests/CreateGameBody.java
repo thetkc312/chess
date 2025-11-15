@@ -1,4 +1,4 @@
-package endpointbodies;
+package endpointrequests;
 
 public record CreateGameBody(String gameName) {
 }

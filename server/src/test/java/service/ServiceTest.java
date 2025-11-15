@@ -8,9 +8,9 @@ import model.UserData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import endpointbodies.CreateGameBody;
-import endpointbodies.JoinBody;
-import endpointbodies.LoginBody;
+import endpointrequests.CreateGameBody;
+import endpointrequests.JoinBody;
+import endpointrequests.LoginBody;
 
 import java.util.ArrayList;
 

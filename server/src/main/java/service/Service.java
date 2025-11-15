@@ -4,9 +4,9 @@ import dataaccess.*;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
-import endpointbodies.CreateGameBody;
-import endpointbodies.JoinBody;
-import endpointbodies.LoginBody;
+import endpointrequests.CreateGameBody;
+import endpointrequests.JoinBody;
+import endpointrequests.LoginBody;
 
 import java.util.ArrayList;
 

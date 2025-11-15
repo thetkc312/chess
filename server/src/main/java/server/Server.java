@@ -2,15 +2,17 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.*;
+import endpointresponses.CreateGameResponse;
+import endpointresponses.GameListResponse;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
 import io.javalin.*;
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
-import endpointbodies.CreateGameBody;
-import endpointbodies.JoinBody;
-import endpointbodies.LoginBody;
+import endpointrequests.CreateGameBody;
+import endpointrequests.JoinBody;
+import endpointrequests.LoginBody;
 import service.BadRequestException;
 import service.Service;
 
@@ -114,7 +116,7 @@ public class Server {
         try {
             ArrayList<GameData> gameList = userService.list(authToken);
 
-            var successResponse = Map.of("games", gameList);
+            GameListResponse successResponse = new GameListResponse(gameList);
             ctx.result(serializer.toJson(successResponse));
         } catch (InvalidCredentialsException e) {
             report401Error(ctx, serializer, e);
@@ -132,7 +134,7 @@ public class Server {
         try {
             int gameID = userService.create(authToken, createGameBody);
 
-            var successResponse = Map.of("gameID", gameID);
+            CreateGameResponse successResponse = new CreateGameResponse(gameID);
             ctx.result(serializer.toJson(successResponse));
         } catch (BadRequestException e) {
             report400Error(ctx, serializer, e);
