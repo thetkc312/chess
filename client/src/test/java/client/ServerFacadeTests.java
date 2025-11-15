@@ -20,8 +20,6 @@ public class ServerFacadeTests {
     private Server server;
     private ServerFacade serverFacade;
 
-    private static final int PORT = 0;
-
     private static final UserData USER_BOB = new UserData("bob", "b0b", "bob@gmail.com");
     private static final LoginBody USER_BOB_LOGIN = new LoginBody("bob", "b0b");
     private static final CreateGameBody CREATE_GAME_BODY = new CreateGameBody("newGame");
@@ -31,9 +29,9 @@ public class ServerFacadeTests {
     @BeforeEach
     public void refresh() {
         server = new Server();
-        server.run(PORT);
-        System.out.println("Started test HTTP server on " + PORT);
-        serverFacade = new ServerFacade(PORT);
+        int port = server.run(0);
+        System.out.println("Started test HTTP server on " + port);
+        serverFacade = new ServerFacade(port);
     }
 
     @AfterEach
