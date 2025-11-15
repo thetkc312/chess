@@ -1,6 +1,4 @@
-package server.EndpointBodies;
-
-import chess.ChessGame;
+package endpointbodies;
 
 public record LoginBody(String username, String password) {
 }

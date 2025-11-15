@@ -1,6 +1,5 @@
 package server;
 
-import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.*;
 import model.AuthData;
@@ -9,9 +8,9 @@ import model.UserData;
 import io.javalin.*;
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
-import server.EndpointBodies.CreateGameBody;
-import server.EndpointBodies.JoinBody;
-import server.EndpointBodies.LoginBody;
+import endpointbodies.CreateGameBody;
+import endpointbodies.JoinBody;
+import endpointbodies.LoginBody;
 import service.BadRequestException;
 import service.Service;
 

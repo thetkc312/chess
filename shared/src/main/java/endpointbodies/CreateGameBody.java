@@ -1,4 +1,4 @@
-package server.EndpointBodies;
+package endpointbodies;
 
 public record CreateGameBody(String gameName) {
 }

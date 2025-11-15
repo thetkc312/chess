@@ -30,9 +30,9 @@ public class DataAccessTest {
 
     @BeforeAll
     public static void setup() {
-        userBob = new UserData("Bob", "bob@bob.bob", "bigboybob");
-        userBot = new UserData("Bot", "bot@bot.bot", "bigboybot");
-        userBad = new UserData("Bad", "bad@bad.bad", "");
+        userBob = new UserData("Bob", "bigboybob", "bob@bob.bob");
+        userBot = new UserData("Bot", "bigboybot", "bot@bot.bot");
+        userBad = new UserData("Bad", "", "bad@bad.bad");
         gameName = "BobBot";
         assignedAuthToken = "assignedAuthToken";
     }

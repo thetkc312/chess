@@ -4,6 +4,7 @@ import org.junit.jupiter.api.*;
 import server.ResponseException;
 import server.Server;
 import server.ServerFacade;
+import server.StatusReader;
 
 
 public class ServerFacadeTests {
@@ -39,7 +40,7 @@ public class ServerFacadeTests {
     public void clearNegative() throws ResponseException {
         server.stop();
         ResponseException e = Assertions.assertThrows(ResponseException.class, () -> serverFacade.clear());
-        Assertions.assertEquals(ResponseException.ResponseStatus.NO_CONNECTION, e.responseStatus);
+        Assertions.assertEquals(StatusReader.ResponseStatus.NO_CONNECTION, e.responseStatus);
         server.run(port);
     }
 

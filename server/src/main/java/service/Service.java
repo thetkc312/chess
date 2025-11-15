@@ -1,14 +1,12 @@
 package service;
 
-import chess.ChessGame;
 import dataaccess.*;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
-import server.EndpointBodies.CreateGameBody;
-import server.EndpointBodies.JoinBody;
-import server.EndpointBodies.LoginBody;
-import server.Server;
+import endpointbodies.CreateGameBody;
+import endpointbodies.JoinBody;
+import endpointbodies.LoginBody;
 
 import java.util.ArrayList;
 
