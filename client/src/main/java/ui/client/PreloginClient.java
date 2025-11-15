@@ -13,7 +13,7 @@ public class PreloginClient {
     }
 
     public EvalResult eval(String cmd, String[] params) {
-        return "";
+        return null;
     }
 
 }

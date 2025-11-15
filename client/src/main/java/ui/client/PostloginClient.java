@@ -13,6 +13,6 @@ public class PostloginClient {
     }
 
     public EvalResult eval(String cmd, String[] params) {
-        return "";
+        return null;
     }
 }
