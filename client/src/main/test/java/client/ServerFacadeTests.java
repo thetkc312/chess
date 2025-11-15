@@ -1,31 +1,62 @@
 package client;
 
+import chess.ChessGame;
+import endpointrequests.CreateGameBody;
+import endpointrequests.JoinBody;
+import endpointrequests.LoginBody;
+import endpointresponses.CreateGameResponse;
+import model.AuthData;
+import model.GameData;
+import model.UserData;
 import org.junit.jupiter.api.*;
-import server.ResponseException;
-import server.Server;
-import server.ServerFacade;
-import server.StatusReader;
+import server.*;
+
+import java.util.ArrayList;
 
 
 public class ServerFacadeTests {
 
-    private static Server server;
-    private static ServerFacade serverFacade;
-    private static final int port = 0;
+    private Server server;
+    private ServerFacade serverFacade;
+
+    private static final int port = 8080;
+    private static final String serverURL = "http://localhost:" + port;
+
+    private static final UserData userBob = new UserData("bob", "b0b", "bob@gmail.com");
+    private static final LoginBody userBobLogin = new LoginBody("bob", "b0b");
+    private static final CreateGameBody createGameBody = new CreateGameBody("newGame");
+    private static final String fakeAuthToken = "fakeAuthToken";
 
     @BeforeAll
     public static void init() {
+        //server = new Server();
+        //server.run(port);
+        //System.out.println("Started test HTTP server on " + port);
+        //serverFacade = new ServerFacade(serverURL);
+    }
+
+    @BeforeEach
+    public void refresh() {
         server = new Server();
         server.run(port);
         System.out.println("Started test HTTP server on " + port);
-        String serverURL = "http://localhost:" + port;
         serverFacade = new ServerFacade(serverURL);
     }
 
-    @AfterAll
-    static void stopServer() {
-        server.stop();
+    @AfterEach
+    public void reset() {
+        try {
+            serverFacade.clear();
+        } catch (ResponseException _) {}
+        try {
+            server.stop();
+        } catch (ResponseException _) {}
     }
+
+//    @AfterAll
+//    static void stopServer() {
+//        server.stop();
+//    }
 
 
     // clear()
@@ -41,89 +72,114 @@ public class ServerFacadeTests {
         server.stop();
         ResponseException e = Assertions.assertThrows(ResponseException.class, () -> serverFacade.clear());
         Assertions.assertEquals(StatusReader.ResponseStatus.NO_CONNECTION, e.responseStatus);
-        server.run(port);
     }
 
 
-    // register()
     @Test
     public void registerPositive() throws ResponseException {
-        Assertions.fail();
+        AuthData registerResult = serverFacade.register(userBob);
+        Assertions.assertEquals(userBob.username(), registerResult.username());
     }
 
     @Test
     public void registerNegative() throws ResponseException {
-        Assertions.fail();
-
+        Assertions.assertThrows(ResponseException.class, () -> serverFacade.register(new UserData("", "", "")));
     }
 
 
-    // login()
+    // These methods are dependent on serverFacade.register working first
     @Test
     public void loginPositive() throws ResponseException {
-        Assertions.fail();
-
+        serverFacade.register(userBob);
+        AuthData loginResult = serverFacade.login(userBobLogin);
+        Assertions.assertEquals(userBobLogin.username(), loginResult.username());
     }
 
     @Test
-    public void loginNegative() throws ResponseException {
-        Assertions.fail();
+    public void loginNegativeUnregistered() throws ResponseException {
+        Assertions.assertThrows(ResponseException.class, () -> serverFacade.login(userBobLogin));
+    }
 
+    @Test
+    public void loginNegativeMalformed() throws ResponseException {
+        Assertions.assertThrows(ResponseException.class, () -> serverFacade.login(new LoginBody("", "")));
+    }
+
+    @Test
+    public void loginNegativeWrong() throws ResponseException {
+        serverFacade.register(userBob);
+        Assertions.assertThrows(ResponseException.class, () -> serverFacade.login(new LoginBody(userBob.username(), "")));
     }
 
 
-    // logout()
+    // These methods are dependent on serverFacade.register working first
     @Test
     public void logoutPositive() throws ResponseException {
-        Assertions.fail();
+        AuthData registerResult = serverFacade.register(userBob);
+        Assertions.assertDoesNotThrow(() -> serverFacade.logout(registerResult.authToken()));
 
     }
 
     @Test
-    public void logoutNegative() throws ResponseException {
-        Assertions.fail();
+    public void logoutNegativeUnregistered() throws ResponseException {
+        AuthData registerResult = serverFacade.register(userBob);
+        Assertions.assertThrows(ResponseException.class, () -> serverFacade.logout(fakeAuthToken));
 
     }
 
 
-    // listGames()
+    // These methods are dependent on serverFacade.createGame working first
     @Test
     public void listGamesPositive() throws ResponseException {
-        Assertions.fail();
+        AuthData registerResult = serverFacade.register(userBob);
+        CreateGameResponse gameResponse = serverFacade.createGame(createGameBody, registerResult.authToken());
+        ArrayList listResult = Assertions.assertDoesNotThrow(() -> serverFacade.listGames(registerResult.authToken()));
+        Assertions.assertNotNull(listResult);
+        Assertions.assertEquals(1, listResult.size());
+        Assertions.assertNotNull(listResult.getFirst());
+        Assertions.assertInstanceOf(GameData.class, listResult.getFirst());
 
     }
 
     @Test
-    public void listGamesNegative() throws ResponseException {
-        Assertions.fail();
+    public void listGamesNegativeBadAuth() throws ResponseException {
+        AuthData registerResult = serverFacade.register(userBob);
+        CreateGameResponse gameResponse = serverFacade.createGame(createGameBody, registerResult.authToken());
+        Assertions.assertThrows(ResponseException.class, () -> serverFacade.listGames(fakeAuthToken));
 
     }
 
 
-    // createGame()
+    // These methods are dependent on serverFacade.register working first
     @Test
     public void createGamePositive() throws ResponseException {
-        Assertions.fail();
+        AuthData registerResult = serverFacade.register(userBob);
+        CreateGameResponse gameResponse = Assertions.assertDoesNotThrow(() -> serverFacade.createGame(createGameBody, registerResult.authToken()));
+        Assertions.assertNotNull(gameResponse);
 
     }
 
     @Test
-    public void createGameNegative() throws ResponseException {
-        Assertions.fail();
+    public void createGameNegativeBadAuth() throws ResponseException {
+        AuthData registerResult = serverFacade.register(userBob);
+        Assertions.assertThrows(ResponseException.class, () -> serverFacade.createGame(createGameBody, fakeAuthToken));
 
     }
 
 
-    // joinGame()
+    //  These methods are dependent on serverFacade.register and serverFacade.createGame working first
     @Test
     public void joinGamePositive() throws ResponseException {
-        Assertions.fail();
-
+        AuthData registerResult = serverFacade.register(userBob);
+        CreateGameResponse gameResponse = serverFacade.createGame(createGameBody, registerResult.authToken());
+        JoinBody joinGameBody = new JoinBody(ChessGame.TeamColor.WHITE, gameResponse.gameID());
+        Assertions.assertDoesNotThrow(() -> serverFacade.joinGame(joinGameBody, registerResult.authToken()));
     }
 
     @Test
-    public void joinGameNegative() throws ResponseException {
-        Assertions.fail();
+    public void joinGameNegativeNonexistant() throws ResponseException {
+        JoinBody joinGameBody = new JoinBody(ChessGame.TeamColor.WHITE, 0);
+        Assertions.assertThrows(ResponseException.class, () -> serverFacade.joinGame(joinGameBody, fakeAuthToken));
 
     }
 
