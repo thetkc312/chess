@@ -2,10 +2,12 @@ package ui.client;
 
 import server.ServerFacade;
 
-public class PostloginClient extends Client {
+public class PostloginClient {
+
+    private final ServerFacade serverFacade;
 
     public PostloginClient(ServerFacade serverFacade) {
-        super(serverFacade);
+        this.serverFacade = serverFacade;
     }
 
     public String eval(String cmd, String[] params) {

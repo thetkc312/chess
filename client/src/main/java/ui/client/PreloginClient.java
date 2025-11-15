@@ -2,10 +2,12 @@ package ui.client;
 
 import server.ServerFacade;
 
-public class PreloginClient extends Client {
+public class PreloginClient {
 
-    public PreloginClient(ServerFacade serverFacade, ServerFacade serverFacade1) {
-        super(serverFacade);
+    private final ServerFacade serverFacade;
+
+    public PreloginClient(ServerFacade serverFacade) {
+        this.serverFacade = serverFacade;
     }
 
     public String eval(String cmd, String[] params) {

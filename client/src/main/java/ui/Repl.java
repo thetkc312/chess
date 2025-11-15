@@ -1,7 +1,6 @@
 package ui;
 
 import server.ServerFacade;
-import ui.client.Client;
 import ui.client.GameplayClient;
 import ui.client.PostloginClient;
 import ui.client.PreloginClient;
@@ -12,7 +11,7 @@ import java.util.Scanner;
 
 public class Repl {
 
-    public static UiStates clientState;
+    private static UiStates clientState;
 
     private final PreloginClient preloginClient;
     private final PostloginClient postloginClient;
@@ -32,7 +31,6 @@ public class Repl {
         System.out.println("Enjoy your time playing chess locally on this machine!");
 
         Scanner scanner = new Scanner(System.in);
-        Client activeClient = preloginClient;
         String result = "";
         String input = "help";
         while (!result.equals("quit")) {
@@ -40,14 +38,11 @@ public class Repl {
             String cmd = (tokens.length > 0) ? tokens[0] : "help";
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
 
-            activeClient = switch (clientState) {
-                case UiStates.PRELOGIN -> preloginClient;
-                case UiStates.POSTLOGIN -> postloginClient;
-                case UiStates.GAMEPLAY -> gameplayClient;
+            result = switch (clientState) {
+                case UiStates.PRELOGIN -> preloginClient.eval(cmd, params);
+                case UiStates.POSTLOGIN -> postloginClient.eval(cmd, params);
+                case UiStates.GAMEPLAY -> gameplayClient.eval(cmd, params);
             };
-
-            activeClient.eval(cmd, params);
-            clientState = activeClient.nextState;
 
             input = scanner.nextLine();
         }
