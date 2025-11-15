@@ -5,6 +5,7 @@ import endpointrequests.CreateGameBody;
 import endpointrequests.JoinBody;
 import endpointrequests.LoginBody;
 import endpointresponses.CreateGameResponse;
+import endpointresponses.GameListResponse;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -133,7 +134,8 @@ public class ServerFacadeTests {
     public void listGamesPositive() throws ResponseException {
         AuthData registerResult = serverFacade.register(userBob);
         CreateGameResponse gameResponse = serverFacade.createGame(createGameBody, registerResult.authToken());
-        ArrayList listResult = Assertions.assertDoesNotThrow(() -> serverFacade.listGames(registerResult.authToken()));
+        GameListResponse gameListResult = Assertions.assertDoesNotThrow(() -> serverFacade.listGames(registerResult.authToken()));
+        ArrayList<GameData> listResult = gameListResult.games();
         Assertions.assertNotNull(listResult);
         Assertions.assertEquals(1, listResult.size());
         Assertions.assertNotNull(listResult.getFirst());

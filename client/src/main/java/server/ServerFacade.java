@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import java.lang.reflect.Type;
 import com.google.gson.reflect.TypeToken;
 import endpointresponses.CreateGameResponse;
+import endpointresponses.GameListResponse;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -58,10 +59,10 @@ public class ServerFacade {
     }
 
     // Take String for authToken, discover all available games, return ArrayList<GameData>
-    public ArrayList<GameData> listGames(String authToken) throws ResponseException {
+    public GameListResponse listGames(String authToken) throws ResponseException {
         HttpRequest request = buildRequest("GET", "/game", null, authToken);
         HttpResponse<String> response = sendRequest(request);
-        return handleArrayResponse(response);
+        return handleResponse(response, GameListResponse.class);
     }
 
     // Take Strings for authToken and gameName, create a new game, return Integer for gameID
@@ -131,23 +132,6 @@ public class ServerFacade {
         }
 
         return null;
-    }
-
-    private ArrayList<GameData> handleArrayResponse(HttpResponse<String> response) throws ResponseException {
-        StatusReader.ResponseStatus responseStatus = StatusReader.getStatusFromCode(response.statusCode());
-        String responseBody = response.body();
-        if (responseStatus != StatusReader.ResponseStatus.GOOD) {
-            if (responseBody != null) {
-                record ResponseErrorMessage(String message) {}
-                ResponseErrorMessage responseErrorMessage = new Gson().fromJson(responseBody, ResponseErrorMessage.class);
-                throw new ResponseException(responseStatus, responseErrorMessage.message);
-            }
-
-            throw new ResponseException(responseStatus, "other failure: " + responseStatus);
-        }
-
-        Type listType = new TypeToken<ArrayList<GameData>>(){}.getType();
-        return new Gson().fromJson(responseBody, listType);
     }
 
 }
