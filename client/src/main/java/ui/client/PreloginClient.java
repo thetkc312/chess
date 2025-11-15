@@ -6,7 +6,7 @@ import ui.states.ClientStates;
 public class PreloginClient {
 
     private final ServerFacade serverFacade;
-    private static final ClientStates myState = ClientStates.PRELOGIN;
+    private static final ClientStates MY_STATE = ClientStates.PRELOGIN;
 
     public PreloginClient(ServerFacade serverFacade) {
         this.serverFacade = serverFacade;

@@ -6,7 +6,7 @@ import ui.states.ClientStates;
 public class PostloginClient {
 
     private final ServerFacade serverFacade;
-    private static final ClientStates myState = ClientStates.POSTLOGIN;
+    private static final ClientStates MY_STATE = ClientStates.POSTLOGIN;
 
     public PostloginClient(ServerFacade serverFacade) {
         this.serverFacade = serverFacade;

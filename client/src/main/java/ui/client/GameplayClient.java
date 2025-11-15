@@ -6,7 +6,7 @@ import ui.states.ClientStates;
 public class GameplayClient {
 
     private final ServerFacade serverFacade;
-    private static final ClientStates myState = ClientStates.GAMEPLAY;
+    private static final ClientStates MY_STATE = ClientStates.GAMEPLAY;
 
     public GameplayClient(ServerFacade serverFacade) {
         this.serverFacade = serverFacade;
