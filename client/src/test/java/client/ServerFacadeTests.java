@@ -38,14 +38,13 @@ public class ServerFacadeTests {
     public void reset() {
         try {
             serverFacade.clear();
-        } catch (ResponseException _) {}
+        } catch (ResponseException e) {}
         try {
             server.stop();
-        } catch (ResponseException _) {}
+        } catch (ResponseException e) {}
     }
 
 
-    // clear()
     @Test
     public void clearPositive() throws ResponseException {
         Assertions.assertDoesNotThrow(() -> serverFacade.clear());
