@@ -29,6 +29,11 @@ public class ServerFacade {
         this.serverUrl = serverUrl;
     }
 
+    public ServerFacade(int serverPort) {
+        this.serverUrl = "http://localhost:" + serverPort;
+
+    }
+
     // Take nothing, clear database, return nothing
     public void clear() throws ResponseException {
         HttpRequest request = buildRequest("DELETE", "/db", null);

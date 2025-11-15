@@ -20,8 +20,7 @@ public class ServerFacadeTests {
     private Server server;
     private ServerFacade serverFacade;
 
-    private static final int PORT = 8080;
-    private static final String SERVER_URL = "http://localhost:" + PORT;
+    private static final int PORT = 0;
 
     private static final UserData USER_BOB = new UserData("bob", "b0b", "bob@gmail.com");
     private static final LoginBody USER_BOB_LOGIN = new LoginBody("bob", "b0b");
@@ -34,7 +33,7 @@ public class ServerFacadeTests {
         server = new Server();
         server.run(PORT);
         System.out.println("Started test HTTP server on " + PORT);
-        serverFacade = new ServerFacade(SERVER_URL);
+        serverFacade = new ServerFacade(PORT);
     }
 
     @AfterEach
