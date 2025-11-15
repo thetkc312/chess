@@ -1,7 +1,8 @@
 package ui.states;
 
-public enum UiStates {
+public enum ClientStates {
     PRELOGIN,
     POSTLOGIN,
-    GAMEPLAY
+    GAMEPLAY,
+    QUIT
 }
