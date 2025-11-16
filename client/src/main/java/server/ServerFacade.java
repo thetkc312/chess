@@ -77,7 +77,7 @@ public class ServerFacade {
 
     // Take String for authToken, a ChessGame.TeamColor for playerColor and int for gameID, add the player to the game, return nothing
     public void joinGame(JoinGameBody joinGameBody, String authToken) throws ResponseException {
-        HttpRequest request = buildRequest("GET", "/game", joinGameBody, authToken);
+        HttpRequest request = buildRequest("PUT", "/game", joinGameBody, authToken);
         HttpResponse<String> response = sendRequest(request);
         handleResponse(response, null);
     }
