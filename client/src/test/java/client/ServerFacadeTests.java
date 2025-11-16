@@ -2,7 +2,7 @@ package client;
 
 import chess.ChessGame;
 import endpointrequests.CreateGameBody;
-import endpointrequests.JoinBody;
+import endpointrequests.JoinGameBody;
 import endpointrequests.LoginBody;
 import endpointresponses.CreateGameResponse;
 import endpointresponses.GameListResponse;
@@ -158,13 +158,13 @@ public class ServerFacadeTests {
     public void joinGamePositive() throws ResponseException {
         AuthData registerResult = serverFacade.register(USER_BOB);
         CreateGameResponse gameResponse = serverFacade.createGame(CREATE_GAME_BODY, registerResult.authToken());
-        JoinBody joinGameBody = new JoinBody(ChessGame.TeamColor.WHITE, gameResponse.gameID());
+        JoinGameBody joinGameBody = new JoinGameBody(gameResponse.gameID(), ChessGame.TeamColor.WHITE);
         Assertions.assertDoesNotThrow(() -> serverFacade.joinGame(joinGameBody, registerResult.authToken()));
     }
 
     @Test
     public void joinGameNegativeNonexistant() throws ResponseException {
-        JoinBody joinGameBody = new JoinBody(ChessGame.TeamColor.WHITE, 0);
+        JoinGameBody joinGameBody = new JoinGameBody(0, ChessGame.TeamColor.WHITE);
         Assertions.assertThrows(ResponseException.class, () -> serverFacade.joinGame(joinGameBody, FAKE_AUTH_TOKEN));
 
     }

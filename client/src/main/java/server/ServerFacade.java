@@ -2,23 +2,19 @@ package server;
 
 import com.google.gson.Gson;
 
-import java.lang.reflect.Type;
-import com.google.gson.reflect.TypeToken;
 import endpointresponses.CreateGameResponse;
 import endpointresponses.GameListResponse;
 import model.AuthData;
-import model.GameData;
 import model.UserData;
 
 import endpointrequests.CreateGameBody;
-import endpointrequests.JoinBody;
+import endpointrequests.JoinGameBody;
 import endpointrequests.LoginBody;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
 
 // Handles HTTP communication with the server, throws ResponseException exceptions based on response status codes
 public class ServerFacade {
@@ -80,7 +76,7 @@ public class ServerFacade {
     }
 
     // Take String for authToken, a ChessGame.TeamColor for playerColor and int for gameID, add the player to the game, return nothing
-    public void joinGame(JoinBody joinGameBody, String authToken) throws ResponseException {
+    public void joinGame(JoinGameBody joinGameBody, String authToken) throws ResponseException {
         HttpRequest request = buildRequest("GET", "/game", joinGameBody, authToken);
         HttpResponse<String> response = sendRequest(request);
         handleResponse(response, null);
