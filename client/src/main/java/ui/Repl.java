@@ -33,10 +33,17 @@ public class Repl {
         System.out.println();
 
         Scanner scanner = new Scanner(System.in);
-        String input = "help";
-        System.out.println(preloginClient.eval(input, null).result());
+        ClientStates lastState = null;
         while (evalResult.nextState() != ClientStates.QUIT) {
-            input = scanner.nextLine();
+            // When there is a state transition, give the help command
+            String input;
+            if (lastState != evalResult.nextState()) {
+                input = "help";
+            } else {
+                input = scanner.nextLine();
+            }
+
+            lastState = evalResult.nextState();
 
             String[] tokens = input.toLowerCase().split(" ");
             String cmd = (tokens.length > 0) ? tokens[0] : "help";
