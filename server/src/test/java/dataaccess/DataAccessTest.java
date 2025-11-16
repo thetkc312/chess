@@ -250,22 +250,7 @@ public class DataAccessTest {
     void createGameInvalid() throws DatabaseException {
         addGameBob();
 
-        assertThrows(DatabaseException.class, () -> dataAccess.createGame("fakeGameName"));
-
-        try (Connection connection = DatabaseManager.getConnection()) {
-            String gameExistsStatement =
-                    """
-                    SELECT * FROM game_data WHERE gameName = ?
-                    """;
-            try (PreparedStatement preparedStatement = connection.prepareStatement(gameExistsStatement)) {
-                preparedStatement.setString(1, "fakeGameName");
-                try (ResultSet rs = preparedStatement.executeQuery()) {
-                    assertFalse(rs.next());
-                }
-            }
-        } catch (SQLException ex) {
-            throw new DatabaseException(String.format("Unable to check if user exists in dataaccess: %s", ex.getMessage()));
-        }
+        assertThrows(DatabaseException.class, () -> dataAccess.createGame(""));
     }
 
     @Test

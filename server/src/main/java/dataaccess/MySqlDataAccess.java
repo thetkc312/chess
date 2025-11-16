@@ -7,21 +7,16 @@ import model.GameData;
 import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.UUID;
 
 public class MySqlDataAccess implements DataAccess {
 
     private String databaseName;
-    private int gameID;
 
     public MySqlDataAccess() throws DatabaseException {
         initializeDatabase();
-        gameID = 0;
     }
 
     @Override
@@ -185,19 +180,32 @@ public class MySqlDataAccess implements DataAccess {
 
     @Override
     public int createGame(String gameName) throws DatabaseException {
+        if (gameName.isBlank()) {
+            throw new DatabaseException("Empty string is not a valid gameName");
+        }
         try (Connection connection = DatabaseManager.getConnection()) {
             String gameAddStatement =
                     """
-                    INSERT INTO game_data (gameID, gameName, game) VALUES (?, ?, ?)
+                    INSERT INTO game_data (gameName, game) VALUES (?, ?)
                     """;
-            try (PreparedStatement preparedStatement = connection.prepareStatement(gameAddStatement)) {
-                // FIXME: Correct this to use autoincrement to avoid gameID collision for new server instances, find out how to return produced ID
-                gameID += 1;
-                GameData gameData = new GameData(gameID, null, null, gameName, new ChessGame());
-                preparedStatement.setInt(1, gameID);
-                preparedStatement.setString(2, gameData.gameName());
-                preparedStatement.setString(3, new Gson().toJson(gameData));
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameAddStatement, Statement.RETURN_GENERATED_KEYS)) {
+                preparedStatement.setString(1, gameName);
+                preparedStatement.setString(2, "Placeholder Game (waiting to insert game with up to date ID)");
                 preparedStatement.executeUpdate();
+                ResultSet rs = preparedStatement.getGeneratedKeys();
+                rs.next();
+                int gameID = rs.getInt(1);
+
+                GameData gameData = new GameData(gameID, null, null, gameName, new ChessGame());
+                String gameUpdateStatement =
+                """
+                UPDATE game_data SET game = ? WHERE gameID = ?
+                """;
+                try (PreparedStatement preparedUpdateStatement = connection.prepareStatement(gameUpdateStatement)) {
+                    preparedUpdateStatement.setString(1, new Gson().toJson(gameData));
+                    preparedUpdateStatement.setInt(2, gameID);
+                    preparedUpdateStatement.executeUpdate();
+                }
                 return gameID;
             }
         } catch (SQLException ex) {
@@ -352,7 +360,7 @@ public class MySqlDataAccess implements DataAccess {
     private final String[] gameTableTemplate = {
             """
             CREATE TABLE IF NOT EXISTS  game_data (
-              `gameID` int NOT NULL,
+              `gameID` int NOT NULL AUTO_INCREMENT,
               `whiteUsername` varchar(256),
               `blackUsername` varchar(256),
               `gameName` varchar(256) NOT NULL,
