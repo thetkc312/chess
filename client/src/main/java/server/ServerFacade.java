@@ -79,7 +79,6 @@ public class ServerFacade {
         return handleResponse(response, CreateGameResponse.class);
     }
 
-
     // Take String for authToken, a ChessGame.TeamColor for playerColor and int for gameID, add the player to the game, return nothing
     public void joinGame(JoinBody joinGameBody, String authToken) throws ResponseException {
         HttpRequest request = buildRequest("GET", "/game", joinGameBody, authToken);
@@ -87,16 +86,28 @@ public class ServerFacade {
         handleResponse(response, null);
     }
 
-    private HttpRequest buildRequest(String method, String path, Object body) {
-        return buildRequest(method, path, body, null);
-    }
 
     public void setAuthData(AuthData authData) {
         this.authData = authData;
     }
+    public void clearAuthData() {
+        this.authData = null;
+    }
 
     public AuthData getAuthData() {
         return authData;
+    }
+
+
+    // TODO: Modify all of the methods taking an authToken as a parameter to use the variables within the class.
+    private void checkAuthToken() throws ResponseException {
+        if (authData == null) {
+            throw new ResponseException(StatusReader.ResponseStatus.UNAUTHORIZED, "AuthData is null");
+        }
+    }
+
+    private HttpRequest buildRequest(String method, String path, Object body) {
+        return buildRequest(method, path, body, null);
     }
 
     private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
