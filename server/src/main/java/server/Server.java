@@ -11,7 +11,7 @@ import io.javalin.*;
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
 import endpointrequests.CreateGameBody;
-import endpointrequests.JoinBody;
+import endpointrequests.JoinGameBody;
 import endpointrequests.LoginBody;
 import service.BadRequestException;
 import service.Service;
@@ -149,9 +149,9 @@ public class Server {
         Gson serializer = new Gson();
         String authToken = ctx.header("authorization");
         String requestJson = ctx.body();
-        JoinBody joinBody = serializer.fromJson(requestJson, JoinBody.class);
+        JoinGameBody joinGameBody = serializer.fromJson(requestJson, JoinGameBody.class);
         try {
-            userService.join(authToken, joinBody);
+            userService.join(authToken, joinGameBody);
 
             ctx.result();
         } catch (BadRequestException e) {
