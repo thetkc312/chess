@@ -33,8 +33,10 @@ public class Repl {
         System.out.println();
 
         Scanner scanner = new Scanner(System.in);
+        String input = "help";
+        System.out.println(preloginClient.eval(input, null).result());
         while (evalResult.nextState() != ClientStates.QUIT) {
-            String input = scanner.nextLine();
+            input = scanner.nextLine();
 
             String[] tokens = input.toLowerCase().split(" ");
             String cmd = (tokens.length > 0) ? tokens[0] : "help";
@@ -44,11 +46,13 @@ public class Repl {
                 case ClientStates.PRELOGIN -> preloginClient.eval(cmd, params);
                 case ClientStates.POSTLOGIN -> postloginClient.eval(cmd, params);
                 case ClientStates.GAMEPLAY -> gameplayClient.eval(cmd, params);
-                case ClientStates.QUIT -> new EvalResult("", ClientStates.QUIT);
+                case ClientStates.QUIT -> new EvalResult("Press enter again to confirm you would like to quit", ClientStates.QUIT);
             };
 
-            System.out.println("Thanks for playing chess!");
+            System.out.println(evalResult.result());
         }
+
+        System.out.println("Thanks for playing chess!");
         System.out.println();
     }
 }
