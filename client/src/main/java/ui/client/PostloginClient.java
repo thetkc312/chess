@@ -166,11 +166,14 @@ public class PostloginClient {
             // TODO: Fix joinGame method, it is not taking effect
             serverFacade.joinGame(joinGameBody, serverFacade.getAuthData().authToken());
 
-            String result = """
-            You have successfully joined a game.
-            
-            """;
+            String result = "You have successfully joined the following game: \n\t";
             // TODO: List games and get the board of the joined game
+            GameListResponse gameListResponse = serverFacade.listGames(serverFacade.getAuthData().authToken());
+            ArrayList<GameData> gameListData = gameListResponse.games();
+            GameData gameData = findGameData(fullGameID, gameListData);
+            result += formatGameData(gameData);
+            result += "\n\n";
+            result += formatGameBoard(gameData.game(), teamColor);
 
             // TODO: Implement transition to GameState in phase 6
             return new EvalResult(result, MY_STATE);
@@ -207,10 +210,25 @@ public class PostloginClient {
         return uiGameData;
     }
 
+    private String formatGameBoard(ChessGame game, ChessGame.TeamColor teamColor) {
+        // Implement aesthetic board drawing
+        String rawBoardString = game.getBoard().visualizeBoard();
+        return rawBoardString;
+    }
+
     private String representPlayerName(String playerName) {
         if (playerName == null) {
             return "_____";
         }
         return playerName;
+    }
+
+    private GameData findGameData(int gameID, ArrayList<GameData> listGameData) {
+        for (GameData gameData : listGameData) {
+            if (gameData.gameID() == gameID) {
+                return gameData;
+            }
+        }
+        throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "No game with the provided gameID could be located.");
     }
 }
