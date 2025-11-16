@@ -1,10 +1,9 @@
 package ui.client;
 
+import chess.ChessGame;
 import endpointrequests.CreateGameBody;
-import endpointrequests.LoginBody;
-import endpointresponses.CreateGameResponse;
+import endpointrequests.JoinGameBody;
 import endpointresponses.GameListResponse;
-import model.AuthData;
 import model.GameData;
 import server.ResponseException;
 import server.ServerFacade;
@@ -83,7 +82,7 @@ public class PostloginClient {
 
     private EvalResult create(String[] params) {
         try {
-            if (params.length != 1) throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "");
+            if (params.length != 1) throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
 
             CreateGameBody createGameBody = new CreateGameBody(params[0]);
             // Note that the gameID of the resulting game is discarded
@@ -93,11 +92,11 @@ public class PostloginClient {
             You have successfully created a game.
             
             """;
-            return new EvalResult(result, ClientStates.POSTLOGIN);
+            return new EvalResult(result, MY_STATE);
         } catch (ResponseException e) {
             String result = "There was an issue while creating a game: ";
             switch (e.responseStatus) {
-                case BAD_REQUEST -> result += "Your game creation input was formatted incorrectly.";
+                case BAD_REQUEST -> result += "Your request to create the game was formatted incorrectly.";
                 case UNAUTHORIZED -> result += "Your session may have been logged out. Restarting the program may help.";
                 case SERVER_ERROR -> result += "There was a server-side issue, please try again later.";
                 default -> result += "Please try again later.";
@@ -122,6 +121,7 @@ public class PostloginClient {
                 result.append("""
                 Active Games:
                 """);
+                gamesListed.clear();
                 for (int i = 1; i <= gameListData.size(); i++) {
                     GameData gameData = gameListData.get(i - 1);
                     gamesListed.put(i, gameData.gameID());
@@ -144,7 +144,52 @@ public class PostloginClient {
     }
 
     private EvalResult join(String[] params) {
-        return new EvalResult("", ClientStates.QUIT);
+        try {
+            if (params.length != 2) throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
+            int uiGameID;
+            try {
+                uiGameID = Integer.parseInt(params[0]);
+            } catch (NumberFormatException e) {
+                throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Unable to convert uiGameID input from string to integer");
+            }
+            int fullGameID = gamesListed.get(uiGameID);
+
+            ChessGame.TeamColor teamColor;
+            switch (params[1].toLowerCase()) {
+                case "white", "w" -> teamColor = ChessGame.TeamColor.WHITE;
+                case "black", "b" -> teamColor = ChessGame.TeamColor.BLACK;
+                default -> throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "");
+            }
+
+            JoinGameBody joinGameBody = new JoinGameBody(fullGameID, teamColor);
+            // Note that the gameID of the resulting game is discarded
+            // TODO: Fix joinGame method, it is not taking effect
+            serverFacade.joinGame(joinGameBody, serverFacade.getAuthData().authToken());
+
+            String result = """
+            You have successfully joined a game.
+            
+            """;
+            // TODO: List games and get the board of the joined game
+
+            // TODO: Implement transition to GameState in phase 6
+            return new EvalResult(result, MY_STATE);
+        } catch (ResponseException e) {
+            String result = "There was an issue while joining a game: ";
+            switch (e.responseStatus) {
+                case BAD_REQUEST -> result += "Your request to join the game was formatted incorrectly.";
+                case UNAUTHORIZED -> result += "Your session may have been logged out. Restarting the program may help.";
+                case ALREADY_TAKEN -> result += "The game role you requested is no longer available.";
+                case SERVER_ERROR -> result += "There was a server-side issue, please try again later.";
+                default -> result += "Please try again later.";
+            }
+            result += """
+            \nBe sure to request to join the game as follows:
+            \tjoin <ID> [WHITE|BLACK] - enter a game by its ID as the specified player
+            
+            """;
+            return new EvalResult(result, MY_STATE);
+        }
     }
 
     private EvalResult observe(String[] params) {
