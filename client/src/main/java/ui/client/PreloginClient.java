@@ -29,11 +29,11 @@ public class PreloginClient {
 
     private EvalResult help() {
         String result = """
-        Here are the possible actions in the pre-login state:
-        \tregister <USERNAME> <PASSWORD> <EMAIL> - create a new account
-        \tlogin <USERNAME> <PASSWORD> - login with an existing account
-        \tquit - exit the program
+        Here are the actions available to you before logging in:
         \thelp - see the possible commands
+        \tquit - exit the program
+        \tlogin <USERNAME> <PASSWORD> - login with an existing account
+        \tregister <USERNAME> <PASSWORD> <EMAIL> - create a new account
         
         """;
         return new EvalResult(result, MY_STATE);
