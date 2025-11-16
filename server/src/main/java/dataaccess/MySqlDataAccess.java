@@ -191,6 +191,7 @@ public class MySqlDataAccess implements DataAccess {
                     INSERT INTO game_data (gameID, gameName, game) VALUES (?, ?, ?)
                     """;
             try (PreparedStatement preparedStatement = connection.prepareStatement(gameAddStatement)) {
+                // FIXME: Correct this to use autoincrement to avoid gameID collision for new server instances, find out how to return produced ID
                 gameID += 1;
                 GameData gameData = new GameData(gameID, null, null, gameName, new ChessGame());
                 preparedStatement.setInt(1, gameID);
