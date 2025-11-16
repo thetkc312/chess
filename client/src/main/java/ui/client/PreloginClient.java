@@ -52,7 +52,7 @@ public class PreloginClient {
             serverFacade.setAuthData(authData);
 
             String result = """
-            You have successfully logged in!
+            You have successfully logged in.
             
             """;
             return new EvalResult(result, ClientStates.POSTLOGIN);

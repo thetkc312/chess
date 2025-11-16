@@ -45,8 +45,8 @@ public class Repl {
 
             lastState = evalResult.nextState();
 
-            String[] tokens = input.toLowerCase().split(" ");
-            String cmd = (tokens.length > 0) ? tokens[0] : "help";
+            String[] tokens = input.split(" ");
+            String cmd = (tokens.length > 0) ? tokens[0].toLowerCase() : "help";
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
 
             evalResult = switch (evalResult.nextState()) {
@@ -58,7 +58,6 @@ public class Repl {
 
             System.out.println(evalResult.result());
         }
-
         System.out.println("Thanks for playing chess!");
         System.out.println();
     }
