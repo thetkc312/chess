@@ -151,13 +151,8 @@ public class PostloginClient {
             if (params.length != 2) {
                 throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
             }
-            int uiGameID;
-            try {
-                uiGameID = Integer.parseInt(params[0]);
-            } catch (NumberFormatException e) {
-                throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Unable to convert uiGameID input from string to integer");
-            }
-            int fullGameID = gamesListed.get(uiGameID);
+
+            int fullGameID = parseGameID(params[0]);
 
             ChessGame.TeamColor teamColor;
             switch (params[1].toLowerCase()) {
@@ -203,13 +198,8 @@ public class PostloginClient {
             if (params.length != 1) {
                 throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
             }
-            int uiGameID;
-            try {
-                uiGameID = Integer.parseInt(params[0]);
-            } catch (NumberFormatException e) {
-                throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Unable to convert uiGameID input from string to integer");
-            }
-            int fullGameID = gamesListed.get(uiGameID);
+
+            int fullGameID = parseGameID(params[0]);
 
             String result = "You are now observing the following game: \n\t";
             GameListResponse gameListResponse = serverFacade.listGames(serverFacade.getAuthData().authToken());
@@ -237,6 +227,22 @@ public class PostloginClient {
         }
     }
 
+
+    private int parseGameID(String gameIDParam) throws ResponseException {
+        int uiGameID;
+        try {
+            uiGameID = Integer.parseInt(gameIDParam);
+        } catch (NumberFormatException e) {
+            throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Unable to convert uiGameID input from string to integer");
+        }
+        int fullGameID;
+        if (gamesListed.containsKey(uiGameID)) {
+            fullGameID = gamesListed.get(uiGameID);
+        } else {
+            throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Provided integer does not match any listed games");
+        }
+        return fullGameID;
+    }
 
     private String formatGameData(GameData gameData) {
         String uiGameData = "";
