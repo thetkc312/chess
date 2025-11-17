@@ -45,7 +45,9 @@ public class PreloginClient {
 
     private EvalResult login(String[] params) {
         try {
-            if (params.length != 2) throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
+            if (params.length != 2) {
+                throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
+            }
 
             LoginBody loginBody = new LoginBody(params[0], params[1]);
             AuthData authData = serverFacade.login(loginBody);
@@ -75,7 +77,9 @@ public class PreloginClient {
 
     private EvalResult register(String[] params) {
         try {
-            if (params.length != 3) throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
+            if (params.length != 3) {
+                throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
+            }
 
             UserData registerBody = new UserData(params[0], params[1], params[2]);
             AuthData authData = serverFacade.register(registerBody);

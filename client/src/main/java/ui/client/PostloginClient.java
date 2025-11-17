@@ -83,7 +83,9 @@ public class PostloginClient {
 
     private EvalResult create(String[] params) {
         try {
-            if (params.length != 1) throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
+            if (params.length != 1) {
+                throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
+            }
 
             CreateGameBody createGameBody = new CreateGameBody(params[0]);
             // Note that the gameID of the resulting game is discarded
@@ -146,7 +148,9 @@ public class PostloginClient {
 
     private EvalResult join(String[] params) {
         try {
-            if (params.length != 2) throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
+            if (params.length != 2) {
+                throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
+            }
             int uiGameID;
             try {
                 uiGameID = Integer.parseInt(params[0]);
@@ -196,7 +200,9 @@ public class PostloginClient {
 
     private EvalResult observe(String[] params) {
         try {
-            if (params.length != 1) throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
+            if (params.length != 1) {
+                throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
+            }
             int uiGameID;
             try {
                 uiGameID = Integer.parseInt(params[0]);
