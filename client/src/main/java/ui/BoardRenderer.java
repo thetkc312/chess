@@ -101,14 +101,6 @@ public class BoardRenderer {
     }
 
     private static String formatUnicode(String rawBoard) {
-        HashMap<ChessPiece.PieceType, String> pieceMap = new HashMap<>();
-        pieceMap.put(ChessPiece.PieceType.QUEEN, EscapeSequences.BLACK_QUEEN_SOLO);
-        pieceMap.put(ChessPiece.PieceType.ROOK, EscapeSequences.BLACK_ROOK_SOLO);
-        pieceMap.put(ChessPiece.PieceType.BISHOP, EscapeSequences.BLACK_BISHOP_SOLO);
-        pieceMap.put(ChessPiece.PieceType.KING, EscapeSequences.BLACK_KING_SOLO);
-        pieceMap.put(ChessPiece.PieceType.PAWN, EscapeSequences.BLACK_PAWN_SOLO);
-        pieceMap.put(ChessPiece.PieceType.KNIGHT, EscapeSequences.BLACK_KNIGHT_SOLO);
-
         StringBuilder unicodeBoard = new StringBuilder();
 
         String[] boardLines = rawBoard.split("\\R");
@@ -130,42 +122,56 @@ public class BoardRenderer {
                 }
 
                 char posChar = boardLine.charAt(j);
-                // If a character is not whitespace...
-                if (!Character.isWhitespace(posChar)) {
-                    // And it's on the piece section of the board...
-                    if ( rowPos > 0 && rowPos < 9 &&  colPos > 0 && colPos < 9) {
-                        ChessPiece posPiece = ChessPiece.fromLetter(posChar);
-                        // And it can be rendered as a piece...
-                        if (posPiece != null) {
-                            // Set the Unicode color based on the piece color
-                            if (posPiece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-                                unicodeBoard.append(EscapeSequences.SET_TEXT_COLOR_WHITE);
-                            } else {
-                                unicodeBoard.append(EscapeSequences.SET_TEXT_COLOR_BLACK);
-                            }
-                            // Convert from the plaintext representation to the fancy character
-                            unicodeBoard.append(pieceMap.get(posPiece.getPieceType()));
-                            unicodeBoard.append(EscapeSequences.RESET_TEXT_COLOR);
-                        // Otherwise, it must be an empty space. Add a wide space in its place.
-                        } else {
-                            unicodeBoard.append(EscapeSequences.EMPTY_SOLO);
-                        }
-                    // Otherwise, it must be a row or column label. Add it in green unchanged.
-                    } else {
-                        unicodeBoard.append(EscapeSequences.SET_TEXT_COLOR_GREEN);
-                        unicodeBoard.append(EscapeSequences.SET_TEXT_BOLD);
-                        unicodeBoard.append(posChar);
-                        unicodeBoard.append(EscapeSequences.RESET_TEXT_BOLD_FAINT);
-                        unicodeBoard.append(EscapeSequences.RESET_TEXT_COLOR);
-                    }
-                // Otherwise, it must be a whitespace character. Add it unchanged.
-                } else {
-                    unicodeBoard.append(posChar);
-                }
+                unicodeBoard.append(convertCharToUnicode(posChar, rowPos, colPos));
             }
             unicodeBoard.append(EscapeSequences.RESET_BG_COLOR);
             unicodeBoard.append("\n");
         }
         return unicodeBoard.toString();
+    }
+
+    private static String convertCharToUnicode (char posChar, int rowPos, int colPos) {
+        HashMap<ChessPiece.PieceType, String> pieceMap = new HashMap<>();
+        pieceMap.put(ChessPiece.PieceType.QUEEN, EscapeSequences.BLACK_QUEEN_SOLO);
+        pieceMap.put(ChessPiece.PieceType.ROOK, EscapeSequences.BLACK_ROOK_SOLO);
+        pieceMap.put(ChessPiece.PieceType.BISHOP, EscapeSequences.BLACK_BISHOP_SOLO);
+        pieceMap.put(ChessPiece.PieceType.KING, EscapeSequences.BLACK_KING_SOLO);
+        pieceMap.put(ChessPiece.PieceType.PAWN, EscapeSequences.BLACK_PAWN_SOLO);
+        pieceMap.put(ChessPiece.PieceType.KNIGHT, EscapeSequences.BLACK_KNIGHT_SOLO);
+
+        StringBuilder unicodeString = new StringBuilder();
+        // If a character is not whitespace...
+        if (!Character.isWhitespace(posChar)) {
+            // And it's on the piece section of the board...
+            if ( rowPos > 0 && rowPos < 9 &&  colPos > 0 && colPos < 9) {
+                ChessPiece posPiece = ChessPiece.fromLetter(posChar);
+                // And it can be rendered as a piece...
+                if (posPiece != null) {
+                    // Set the Unicode color based on the piece color
+                    if (posPiece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+                        unicodeString.append(EscapeSequences.SET_TEXT_COLOR_WHITE);
+                    } else {
+                        unicodeString.append(EscapeSequences.SET_TEXT_COLOR_BLACK);
+                    }
+                    // Convert from the plaintext representation to the fancy character
+                    unicodeString.append(pieceMap.get(posPiece.getPieceType()));
+                    unicodeString.append(EscapeSequences.RESET_TEXT_COLOR);
+                    // Otherwise, it must be an empty space. Add a wide space in its place.
+                } else {
+                    unicodeString.append(EscapeSequences.EMPTY_SOLO);
+                }
+                // Otherwise, it must be a row or column label. Add it in green unchanged.
+            } else {
+                unicodeString.append(EscapeSequences.SET_TEXT_COLOR_GREEN);
+                unicodeString.append(EscapeSequences.SET_TEXT_BOLD);
+                unicodeString.append(posChar);
+                unicodeString.append(EscapeSequences.RESET_TEXT_BOLD_FAINT);
+                unicodeString.append(EscapeSequences.RESET_TEXT_COLOR);
+            }
+            // Otherwise, it must be a whitespace character. Add it unchanged.
+        } else {
+            unicodeString.append(posChar);
+        }
+        return unicodeString.toString();
     }
 }
