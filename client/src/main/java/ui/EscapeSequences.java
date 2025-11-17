@@ -61,5 +61,19 @@ public class EscapeSequences {
     public static final String BLACK_PAWN = " ♟ ";
     public static final String EMPTY = " \u2003 ";
 
+    public static final String WHITE_KING_SOLO = "♔";
+    public static final String WHITE_QUEEN_SOLO = "♕";
+    public static final String WHITE_BISHOP_SOLO = "♗";
+    public static final String WHITE_KNIGHT_SOLO = "♘";
+    public static final String WHITE_ROOK_SOLO = "♖";
+    public static final String WHITE_PAWN_SOLO = "♙";
+    public static final String BLACK_KING_SOLO = "♚";
+    public static final String BLACK_QUEEN_SOLO = "♛";
+    public static final String BLACK_BISHOP_SOLO = "♝";
+    public static final String BLACK_KNIGHT_SOLO = "♞";
+    public static final String BLACK_ROOK_SOLO = "♜";
+    public static final String BLACK_PAWN_SOLO = "♟";
+    public static final String EMPTY_SOLO = "\u2003";
+
     public static String moveCursorToLocation(int x, int y) { return UNICODE_ESCAPE + "[" + y + ";" + x + "H"; }
 }
