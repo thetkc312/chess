@@ -94,14 +94,6 @@ public class ServerFacade {
         return authData;
     }
 
-
-    // TODO: Modify all of the methods taking an authToken as a parameter to use the variables within the class.
-    private void checkAuthToken() throws ResponseException {
-        if (authData == null) {
-            throw new ResponseException(StatusReader.ResponseStatus.UNAUTHORIZED, "AuthData is null");
-        }
-    }
-
     private HttpRequest buildRequest(String method, String path, Object body) {
         return buildRequest(method, path, body, null);
     }
