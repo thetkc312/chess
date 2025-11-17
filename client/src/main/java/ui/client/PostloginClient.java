@@ -164,11 +164,9 @@ public class PostloginClient {
 
             JoinGameBody joinGameBody = new JoinGameBody(fullGameID, teamColor);
             // Note that the gameID of the resulting game is discarded
-            // TODO: Fix joinGame method, it is not taking effect
             serverFacade.joinGame(joinGameBody, serverFacade.getAuthData().authToken());
 
             String result = "You have successfully joined the following game: \n\t";
-            // TODO: List games and get the board of the joined game
             GameListResponse gameListResponse = serverFacade.listGames(serverFacade.getAuthData().authToken());
             ArrayList<GameData> gameListData = gameListResponse.games();
             GameData gameData = findGameData(fullGameID, gameListData);
@@ -197,7 +195,40 @@ public class PostloginClient {
     }
 
     private EvalResult observe(String[] params) {
-        return new EvalResult("", ClientStates.QUIT);
+        try {
+            if (params.length != 1) throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
+            int uiGameID;
+            try {
+                uiGameID = Integer.parseInt(params[0]);
+            } catch (NumberFormatException e) {
+                throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Unable to convert uiGameID input from string to integer");
+            }
+            int fullGameID = gamesListed.get(uiGameID);
+
+            String result = "You are now observing the following game: \n\t";
+            GameListResponse gameListResponse = serverFacade.listGames(serverFacade.getAuthData().authToken());
+            ArrayList<GameData> gameDataList = gameListResponse.games();
+            GameData gameData = findGameData(fullGameID, gameDataList);
+            result += formatGameData(gameData);
+            result += "\n\n";
+            result += BoardRenderer.renderBoard(gameData.game(), ChessGame.TeamColor.WHITE);
+
+            return new EvalResult(result, MY_STATE);
+        } catch (ResponseException e) {
+            String result = "There was an issue while trying to observe a game: ";
+            switch (e.responseStatus) {
+                case BAD_REQUEST -> result += "Your request to join the game was formatted incorrectly.";
+                case UNAUTHORIZED -> result += "Your session may have already been logged out. Restarting the program may help.";
+                case SERVER_ERROR -> result += "There was a server-side issue, please try again later.";
+                default -> result += "Please try again later.";
+            }
+            result += """
+            \nBe sure to request to observe a game as follows:
+            \tobserve <ID> - watch a game as a spectator
+            
+            """;
+            return new EvalResult(result, MY_STATE);
+        }
     }
 
 
