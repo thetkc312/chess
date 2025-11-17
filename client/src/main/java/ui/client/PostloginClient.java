@@ -8,6 +8,7 @@ import model.GameData;
 import server.ResponseException;
 import server.ServerFacade;
 import server.StatusReader;
+import ui.BoardRenderer;
 import ui.states.ClientStates;
 
 import java.util.ArrayList;
@@ -173,7 +174,7 @@ public class PostloginClient {
             GameData gameData = findGameData(fullGameID, gameListData);
             result += formatGameData(gameData);
             result += "\n\n";
-            result += formatGameBoard(gameData.game(), teamColor);
+            result += BoardRenderer.renderBoard(gameData.game(), teamColor);
 
             // TODO: Implement transition to GameState in phase 6
             return new EvalResult(result, MY_STATE);
@@ -208,12 +209,6 @@ public class PostloginClient {
         uiGameData += " | Black Team - ";
         uiGameData += representPlayerName(gameData.blackUsername());
         return uiGameData;
-    }
-
-    private String formatGameBoard(ChessGame game, ChessGame.TeamColor teamColor) {
-        // Implement aesthetic board drawing
-        String rawBoardString = game.getBoard().visualizeBoard();
-        return rawBoardString;
     }
 
     private String representPlayerName(String playerName) {
