@@ -23,7 +23,7 @@ public class PawnRules extends MoveRules {
      * @param myPosition where this piece is located
      * @return a HashSet of 2-deep integer arrays encoding potential directions this piece could move
      */
-    protected HashSet<int[]> potentialMoves(ChessBoard board, ChessPosition myPosition) {
+    protected HashSet<int[]> potentialMovements(ChessBoard board, ChessPosition myPosition) {
         HashSet<int[]> pawnMoves = new HashSet<>(8);
         int direction;
         int startingRow;

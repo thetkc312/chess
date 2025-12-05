@@ -1,8 +1,10 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import chess.ChessPiece;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 public class BoardRenderer {
@@ -42,8 +44,21 @@ public class BoardRenderer {
             processedBoard = rotateBoard(processedBoard);
         }
         processedBoard = padBoard(processedBoard);
-        processedBoard = formatUnicode(processedBoard);
+        processedBoard = formatUnicode(processedBoard, null);
         return processedBoard;
+    }
+
+    public static String renderBoardMoves(ChessGame game, ChessGame.TeamColor teamColor, Collection<ChessMove> moveOptions) {
+        String processedBoard = rawBoard(game);
+        processedBoard = wrapBoard(processedBoard);
+        if (teamColor == ChessGame.TeamColor.BLACK) {
+            processedBoard = rotateBoard(processedBoard);
+            // TODO: Add rotation filtering for moveOptions
+        }
+        processedBoard = padBoard(processedBoard);
+        processedBoard = formatUnicode(processedBoard, moveOptions);
+        return processedBoard;
+
     }
 
     private static String rawBoard(ChessGame game) {
@@ -100,7 +115,7 @@ public class BoardRenderer {
         return paddedBoard.toString();
     }
 
-    private static String formatUnicode(String rawBoard) {
+    private static String formatUnicode(String rawBoard, Collection<ChessMove> moveOptions) {
         StringBuilder unicodeBoard = new StringBuilder();
 
         String[] boardLines = rawBoard.split("\\R");
@@ -112,6 +127,10 @@ public class BoardRenderer {
             for (int j = 0; j < boardLine.length(); j++) {
                 // Track the column position based on the board square width
                 int colPos = j / BOARD_SQUARE_WIDTH;
+                // If it's one of moveOptions' start or end positions, give it a special color
+                if (moveOptions != null) {
+                    // TODO: Implement special square rendering for move options
+                }
                 // If it's the start of a new square, set the background color.
                 if (j % BOARD_SQUARE_WIDTH == 0) {
                     switch (boardFormatLines[rowPos].charAt(colPos)) {

@@ -9,7 +9,7 @@ public class RookRules extends MoveRules {
         super(true, pieceColor);
     }
 
-    protected HashSet<int[]> potentialMoves(ChessBoard board, ChessPosition myPosition) {
+    protected HashSet<int[]> potentialMovements(ChessBoard board, ChessPosition myPosition) {
         HashSet<int[]> rookMoves = new HashSet<>(8);
         rookMoves.add(new int[]{-1, 0});
         rookMoves.add(new int[]{0, -1});

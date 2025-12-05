@@ -31,11 +31,11 @@ public abstract class MoveRules {
      * @return a HashSet of 2-deep integer arrays encoding potential directions this piece could move
      */
     // A hash set of int arrays of format [row, col] where each [row, col] pair indicates a potential move direction of a piece
-    protected abstract HashSet<int[]> potentialMoves(ChessBoard board, ChessPosition myPosition);
+    protected abstract HashSet<int[]> potentialMovements(ChessBoard board, ChessPosition myPosition);
 
     public HashSet<ChessMove> getMoves(ChessBoard board, ChessPosition myPosition) {
-        for (int[] potentialMove : potentialMoves(board, myPosition)) {
-            ChessPosition targetPosition = myPosition.getMovedPosition(potentialMove[0], potentialMove[1]);
+        for (int[] potentialMovement : potentialMovements(board, myPosition)) {
+            ChessPosition targetPosition = myPosition.getMovedPosition(potentialMovement[0], potentialMovement[1]);
             if (!targetPosition.isOnBoard()) {
                 continue;
             }
@@ -62,7 +62,7 @@ public abstract class MoveRules {
                 // If the targetPosition is an empty position, continue adding moves. Otherwise,
                 // it must be taking an enemy piece and forced to stop, and should not recurse.
                 if (board.getPiece(targetPosition) == null) {
-                    targetPosition = targetPosition.getMovedPosition(potentialMove[0], potentialMove[1]);
+                    targetPosition = targetPosition.getMovedPosition(potentialMovement[0], potentialMovement[1]);
                 } else {
                     break;
                 }

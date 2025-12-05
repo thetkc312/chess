@@ -10,7 +10,7 @@ public class QueenRules extends MoveRules {
     }
 
     // None of the queen's potential moves are influenced by the board state
-    protected HashSet<int[]> potentialMoves(ChessBoard board, ChessPosition myPosition) {
+    protected HashSet<int[]> potentialMovements(ChessBoard board, ChessPosition myPosition) {
         HashSet<int[]> queenMoves = new HashSet<>(8);
         queenMoves.add(new int[]{-1, -1});
         queenMoves.add(new int[]{-1, 0});

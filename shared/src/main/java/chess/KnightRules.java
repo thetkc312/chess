@@ -10,7 +10,7 @@ public class KnightRules extends MoveRules {
     }
 
     // None of the queen's potential moves are influenced by the board state
-    protected HashSet<int[]> potentialMoves(ChessBoard board, ChessPosition myPosition) {
+    protected HashSet<int[]> potentialMovements(ChessBoard board, ChessPosition myPosition) {
         HashSet<int[]> knightMoves = new HashSet<>(8);
         knightMoves.add(new int[]{-2, -1});
         knightMoves.add(new int[]{-2, 1});

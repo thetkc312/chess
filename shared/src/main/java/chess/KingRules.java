@@ -9,7 +9,7 @@ public class KingRules extends MoveRules {
         super(false, pieceColor);
     }
 
-    protected HashSet<int[]> potentialMoves(ChessBoard board, ChessPosition myPosition) {
+    protected HashSet<int[]> potentialMovements(ChessBoard board, ChessPosition myPosition) {
         HashSet<int[]> kingMoves = new HashSet<>(8);
         kingMoves.add(new int[]{-1, -1});
         kingMoves.add(new int[]{-1, 0});

@@ -9,7 +9,7 @@ public class BishopRules extends MoveRules {
         super(true, pieceColor);
     }
 
-    protected HashSet<int[]> potentialMoves(ChessBoard board, ChessPosition myPosition) {
+    protected HashSet<int[]> potentialMovements(ChessBoard board, ChessPosition myPosition) {
         HashSet<int[]> bishopMoves = new HashSet<>(8);
         bishopMoves.add(new int[]{-1, -1});
         bishopMoves.add(new int[]{-1, 1});
