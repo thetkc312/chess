@@ -21,8 +21,9 @@ import java.util.Map;
 
 public class Server {
 
-    private final Javalin javalinServer;
     private final Service userService;
+    private final Javalin javalinServer;
+    private final WebSocketHandler webSocketHandler;
 
     public Server() {
         DataAccess dataAccess;
@@ -36,7 +37,10 @@ public class Server {
         }
 
         userService = new Service(dataAccess);
+
         javalinServer = Javalin.create((JavalinConfig config) -> config.staticFiles.add("web"));
+
+        webSocketHandler = new WebSocketHandler();
 
         // Register your endpoints and exception handlers here.
         // Register a user. If successful, an authorization authToken is returned. You may use the authToken with
@@ -57,7 +61,11 @@ public class Server {
         javalinServer.put("game", (Context ctx) -> joinGame(ctx));
         // Clear ALL data from the dataaccess. This includes users and all game data. No authorization authToken is required.
         javalinServer.delete("db", (Context ctx) -> deleteDB(ctx));
-
+        // Open a websocket connection to the server while in gameplay mode to send and receive gameplay messages
+        javalinServer.ws("ws", ws -> {
+            ws.onConnect(webSocketHandler);
+            ws.onMessage(webSocketHandler);
+        });
     }
 
     private void register(Context ctx) {
