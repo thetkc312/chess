@@ -66,6 +66,7 @@ public class Server {
         javalinServer.ws("ws", ws -> {
             ws.onConnect(userCommandHandler);
             ws.onMessage(userCommandHandler);
+            ws.onClose(userCommandHandler);
         });
     }
 
