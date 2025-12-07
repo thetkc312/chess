@@ -36,7 +36,7 @@ public class ServiceTest {
     @BeforeEach
     public void reset() {
         //gameData = new GameData(606, null, null, "BobBot", new ChessGame());
-        dataAccess = new MemoryDataAccess();
+        dataAccess = new DataAccessMemory();
         service = new Service(dataAccess);
     }
 
