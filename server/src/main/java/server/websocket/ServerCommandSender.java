@@ -4,6 +4,7 @@ import chess.ChessGame;
 import com.google.gson.Gson;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
+import model.GameData;
 import websocket.messages.ServerErrorMessage;
 import websocket.messages.ServerLoadGameMessage;
 import websocket.messages.ServerMessage;
@@ -13,9 +14,9 @@ public class ServerCommandSender {
 
     private static final Gson serializer = new Gson();
 
-    public static void sendLoadGame(WsContext ctx, ChessGame game) {
+    public static void sendLoadGame(WsContext ctx, GameData game) {
         System.out.println("Sending LOAD_GAME message...");
-        ServerMessage serverMessage = new ServerLoadGameMessage(ServerMessage.ServerMessageType.ERROR, game);
+        ServerMessage serverMessage = new ServerLoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
         sendMessage(serverMessage, ctx);
     }
 
