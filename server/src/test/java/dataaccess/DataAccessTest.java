@@ -42,7 +42,7 @@ public class DataAccessTest {
     public void reset() throws DatabaseException {
         DatabaseManager.createDatabase();
         dropDatabase();
-        dataAccess = new MySqlDataAccess();
+        dataAccess = new DataAccessMySql();
         gameData = new GameData(1, null, null, "BobBot", new ChessGame());
     }
 
