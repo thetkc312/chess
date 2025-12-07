@@ -13,7 +13,7 @@ import io.javalin.http.Context;
 import endpointrequests.CreateGameBody;
 import endpointrequests.JoinGameBody;
 import endpointrequests.LoginBody;
-import server.websocket.UserCommandHandler;
+import server.websocket.UserWSHandler;
 import service.BadRequestException;
 import service.Service;
 
@@ -24,7 +24,7 @@ public class Server {
 
     private final Service userService;
     private final Javalin javalinServer;
-    private final UserCommandHandler userCommandHandler;
+    private final UserWSHandler userWSHandler;
 
     public Server() {
         DataAccess dataAccess;
@@ -41,7 +41,7 @@ public class Server {
 
         javalinServer = Javalin.create((JavalinConfig config) -> config.staticFiles.add("web"));
 
-        userCommandHandler = new UserCommandHandler();
+        userWSHandler = new UserWSHandler(dataAccess);
 
         // Register your endpoints and exception handlers here.
         // Register a user. If successful, an authorization authToken is returned. You may use the authToken with
@@ -64,9 +64,9 @@ public class Server {
         javalinServer.delete("db", (Context ctx) -> deleteDB(ctx));
         // Open a websocket connection to the server while in gameplay mode to send and receive gameplay messages
         javalinServer.ws("ws", ws -> {
-            ws.onConnect(userCommandHandler);
-            ws.onMessage(userCommandHandler);
-            ws.onClose(userCommandHandler);
+            ws.onConnect(userWSHandler);
+            ws.onMessage(userWSHandler);
+            ws.onClose(userWSHandler);
         });
     }
 

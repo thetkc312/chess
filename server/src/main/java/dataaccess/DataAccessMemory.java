@@ -1,5 +1,6 @@
 package dataaccess;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
@@ -95,6 +96,16 @@ public class DataAccessMemory implements DataAccess {
         } else {
             return gameMap.get(gameID).whiteUsername() == null;
         }
+    }
+
+    @Override
+    public void updateGameBoard(ChessBoard chessBoard) throws DatabaseException {
+        // TODO: Implement DataAccessMemory.updateGameBoard
+    }
+
+    @Override
+    public void removeUser(String username, ChessGame.TeamColor teamColor, int gameID) throws DatabaseException {
+        // TODO: Implement DataAccessMemory.removeUser
     }
 
     @Override

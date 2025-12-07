@@ -1,7 +1,10 @@
 package server.websocket;
 
+import chess.ChessBoard;
 import chess.ChessMove;
 import com.google.gson.Gson;
+import dataaccess.DataAccess;
+import dataaccess.DatabaseException;
 import io.javalin.websocket.*;
 import websocket.commands.UserGameCommand;
 import websocket.commands.UserMoveCommand;
@@ -9,13 +12,20 @@ import websocket.commands.UserMoveCommand;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-public class UserCommandHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
+public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
     // SessionID : WsContext
     public final ConcurrentHashMap<String, WsContext> wsSessions = new ConcurrentHashMap<>();
 
-    // GameID : SessionID
-    public final ConcurrentHashMap<String, String> gameSessions = new ConcurrentHashMap<>();
+    // GameID : [ SessionID, SessionID, ... ]
+    public final ConcurrentHashMap<String, String[]> gameSessions = new ConcurrentHashMap<>();
+
+    public final DataAccess dataAccess;
+
+    public UserWSHandler(DataAccess dataAccess) {
+
+        this.dataAccess = dataAccess;
+    }
 
     @Override
     public void handleConnect(WsConnectContext ctxConnect) {
@@ -78,9 +88,13 @@ public class UserCommandHandler implements WsConnectHandler, WsMessageHandler, W
     }
 
     private void processMakeMove(String wsSessionID, int gameID, ChessMove move) {
-        //TODO: Implement make_move processing
         System.out.println("Processing MAKE_MOVE message...");
-
+        //TODO: Implement make_move processing
+        try {
+            dataAccess.updateGameBoard(new ChessBoard());
+        } catch (DatabaseException e) {
+            ServerCommandSender.sendError(wsSessions.get(wsSessionID), "There was an error processing your move.");
+        }
     }
 
     private void processLeave(String wsSessionID, int gameID) {

@@ -1,5 +1,6 @@
 package dataaccess;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import model.AuthData;
@@ -302,6 +303,16 @@ public class DataAccessMySql implements DataAccess {
         } catch (SQLException ex) {
             throw new DatabaseException(String.format("Unable to check if role is open in dataaccess: %s", ex.getMessage()));
         }
+    }
+
+    @Override
+    public void updateGameBoard(ChessBoard chessBoard) throws DatabaseException {
+        // TODO: Implement actual DataAccessMySql.updateGameBoard
+    }
+
+    @Override
+    public void removeUser(String username, ChessGame.TeamColor teamColor, int gameID) throws DatabaseException {
+        // TODO: Implement actual DataAccessMySql.removeUser
     }
 
     @Override
