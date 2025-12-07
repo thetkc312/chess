@@ -29,12 +29,12 @@ public class Server {
     public Server() {
         DataAccess dataAccess;
         try {
-            dataAccess = new MySqlDataAccess();
-            //dataAccess = new MemoryDataAccess();
+            dataAccess = new DataAccessMySql();
+            //dataAccess = new DataAccessMemory();
         } catch (DatabaseException e) {
             System.out.println(e.getMessage());
-            System.out.println("Starting server with MemoryDataAccess instance instead.");
-            dataAccess = new MemoryDataAccess();
+            System.out.println("Starting server with DataAccessMemory instance instead.");
+            dataAccess = new DataAccessMemory();
         }
 
         userService = new Service(dataAccess);
