@@ -187,12 +187,11 @@ public class DataAccessMySql implements DataAccess {
         try (Connection connection = DatabaseManager.getConnection()) {
             String gameAddStatement =
                     """
-                    INSERT INTO game_data (gameName, game, activeGame) VALUES (?, ?, ?)
+                    INSERT INTO game_data (gameName, game) VALUES (?, ?)
                     """;
             try (PreparedStatement preparedStatement = connection.prepareStatement(gameAddStatement, Statement.RETURN_GENERATED_KEYS)) {
                 preparedStatement.setString(1, gameName);
                 preparedStatement.setString(2, "Placeholder Game (waiting to insert game with up to date ID)");
-                preparedStatement.setBoolean(3, true);
                 preparedStatement.executeUpdate();
                 ResultSet rs = preparedStatement.getGeneratedKeys();
                 rs.next();
@@ -382,7 +381,7 @@ public class DataAccessMySql implements DataAccess {
               `blackUsername` varchar(256),
               `gameName` varchar(256) NOT NULL,
               `game` TEXT NOT NULL,
-              `activeGame` BOOLEAN NOT NULL,
+              `activeGame` BOOLEAN DEFAULT TRUE,
               PRIMARY KEY (`gameID`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs
             """
