@@ -187,17 +187,18 @@ public class DataAccessMySql implements DataAccess {
         try (Connection connection = DatabaseManager.getConnection()) {
             String gameAddStatement =
                     """
-                    INSERT INTO game_data (gameName, game) VALUES (?, ?)
+                    INSERT INTO game_data (gameName, game, activeGame) VALUES (?, ?, ?)
                     """;
             try (PreparedStatement preparedStatement = connection.prepareStatement(gameAddStatement, Statement.RETURN_GENERATED_KEYS)) {
                 preparedStatement.setString(1, gameName);
                 preparedStatement.setString(2, "Placeholder Game (waiting to insert game with up to date ID)");
+                preparedStatement.setBoolean(3, true);
                 preparedStatement.executeUpdate();
                 ResultSet rs = preparedStatement.getGeneratedKeys();
                 rs.next();
                 int gameID = rs.getInt(1);
 
-                GameData gameData = new GameData(gameID, null, null, gameName, new ChessGame());
+                GameData gameData = new GameData(gameID, null, null, gameName, new ChessGame(), true);
                 String gameUpdateStatement =
                 """
                 UPDATE game_data SET game = ? WHERE gameID = ?
@@ -256,10 +257,10 @@ public class DataAccessMySql implements DataAccess {
             GameData updatedGameData;
             if (teamColor == ChessGame.TeamColor.WHITE) {
                 colorUser = "whiteUsername";
-                updatedGameData = new GameData(gameData.gameID(), username, gameData.blackUsername(), gameData.gameName(), gameData.game());
+                updatedGameData = new GameData(gameData.gameID(), username, gameData.blackUsername(), gameData.gameName(), gameData.game(), true);
             } else {
                 colorUser = "blackUsername";
-                updatedGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), username, gameData.gameName(), gameData.game());
+                updatedGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), username, gameData.gameName(), gameData.game(), true);
             }
 
 
@@ -308,6 +309,11 @@ public class DataAccessMySql implements DataAccess {
     @Override
     public void updateGameBoard(ChessBoard chessBoard) throws DatabaseException {
         // TODO: Implement actual DataAccessMySql.updateGameBoard
+    }
+
+    @Override
+    public void endGame(int gameID) {
+        // TODO: Implement actual DataAccessMySql.endGame
     }
 
     @Override
@@ -376,6 +382,7 @@ public class DataAccessMySql implements DataAccess {
               `blackUsername` varchar(256),
               `gameName` varchar(256) NOT NULL,
               `game` TEXT NOT NULL,
+              `activeGame` BOOLEAN NOT NULL,
               PRIMARY KEY (`gameID`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs
             """

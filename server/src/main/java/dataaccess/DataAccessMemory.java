@@ -80,7 +80,7 @@ public class DataAccessMemory implements DataAccess {
     @Override
     public int createGame(String gameName) {
         gameID += 1;
-        gameMap.put(gameID, new GameData(gameID, null, null, gameName, new ChessGame()));
+        gameMap.put(gameID, new GameData(gameID, null, null, gameName, new ChessGame(), true));
         return gameID;
     }
 
@@ -104,6 +104,11 @@ public class DataAccessMemory implements DataAccess {
     }
 
     @Override
+    public void endGame(int gameID) {
+        // TODO: Implement DataAccessMemory.endGame
+    }
+
+    @Override
     public void removeUser(String username, ChessGame.TeamColor teamColor, int gameID) throws DatabaseException {
         // TODO: Implement DataAccessMemory.removeUser
     }
@@ -119,7 +124,7 @@ public class DataAccessMemory implements DataAccess {
         }
         String oldGameName = gameMap.get(gameID).gameName();
         ChessGame oldGame = gameMap.get(gameID).game();
-        GameData newGameData = new GameData(gameID, whiteUsername, blackUsername, oldGameName, oldGame);
+        GameData newGameData = new GameData(gameID, whiteUsername, blackUsername, oldGameName, oldGame, true);
         gameMap.put(gameID, newGameData);
     }
 

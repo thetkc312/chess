@@ -43,7 +43,7 @@ public class DataAccessTest {
         DatabaseManager.createDatabase();
         dropDatabase();
         dataAccess = new DataAccessMySql();
-        gameData = new GameData(1, null, null, "BobBot", new ChessGame());
+        gameData = new GameData(1, null, null, "BobBot", new ChessGame(), true);
     }
 
     @Test
@@ -269,7 +269,7 @@ public class DataAccessTest {
 
         dataAccess.joinGame(userBob.username(), ChessGame.TeamColor.WHITE, gameData.gameID());
         dataAccess.joinGame(userBot.username(), ChessGame.TeamColor.BLACK, gameData.gameID());
-        GameData newGameData = new GameData(gameData.gameID(), userBob.username(), userBot.username(), gameData.gameName(), gameData.game());
+        GameData newGameData = new GameData(gameData.gameID(), userBob.username(), userBot.username(), gameData.gameName(), gameData.game(), true);
 
         try (Connection connection = DatabaseManager.getConnection()) {
             String gameExistsStatement =
@@ -292,7 +292,7 @@ public class DataAccessTest {
         }
 
         dataAccess.joinGame(userBob.username(), ChessGame.TeamColor.BLACK, gameData.gameID());
-        newGameData = new GameData(gameData.gameID(), userBob.username(), userBob.username(), gameData.gameName(), gameData.game());
+        newGameData = new GameData(gameData.gameID(), userBob.username(), userBob.username(), gameData.gameName(), gameData.game(), true);
 
         try (Connection connection = DatabaseManager.getConnection()) {
             String gameExistsStatement =
@@ -337,7 +337,7 @@ public class DataAccessTest {
     @Test
     void listGamesValid() throws DatabaseException {
         assertEquals(0, dataAccess.listGames().size());
-        GameData newGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), userBob.username(), gameData.gameName(), gameData.game());
+        GameData newGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), userBob.username(), gameData.gameName(), gameData.game(), true);
 
         try (Connection connection = DatabaseManager.getConnection()) {
             String gameAddStatement =
