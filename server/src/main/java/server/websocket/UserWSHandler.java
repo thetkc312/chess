@@ -109,9 +109,9 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
         return true;
     }
 
-    private String getUsername(String authToken) {
+    private String getUsername(String authToken) throws DatabaseException {
         //TODO: Implement username extraction from database
-        return "fakeUsername";
+        return dataAccess.getUser(authToken);
     }
 
     private void processConnect(String rootSessionID, UserGameCommand userGameCommand) {
@@ -121,8 +121,15 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
         if (sessionUsernames.contains(rootSessionID)) {
             ServerCommandSender.sendError(rootUserSession, "An error was caused as a CONNECT request was made to the server while this session is already connected.");
             return;
-        } // else
-        String rootUsername = getUsername(userGameCommand.getAuthToken());
+        }
+        // else, get the username corresponding to this user's authToken. It should only fail if the server has connection issues.
+        String rootUsername;
+        try {
+            rootUsername = getUsername(userGameCommand.getAuthToken());
+        } catch (DatabaseException e) {
+            ServerCommandSender.sendError(rootUserSession, "There was an error while extracting the username corresponding to this authentication token");
+            return;
+        }
         sessionUsernames.put(rootSessionID, rootUsername);
 
         // If the game the client is connecting to is already documented, simply add its sessionID to the String Array for that game
