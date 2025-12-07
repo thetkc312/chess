@@ -11,11 +11,11 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class MySqlDataAccess implements DataAccess {
+public class DataAccessMySql implements DataAccess {
 
     private String databaseName;
 
-    public MySqlDataAccess() throws DatabaseException {
+    public DataAccessMySql() throws DatabaseException {
         initializeDatabase();
     }
 

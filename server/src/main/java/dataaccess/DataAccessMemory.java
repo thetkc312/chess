@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
-public class MemoryDataAccess implements DataAccess {
+public class DataAccessMemory implements DataAccess {
 
     private final HashMap<String, UserData> userMap = new HashMap<>();
     private final HashMap<String, String> authMap = new HashMap<>(); // Hash map of format AuthToken: Username
