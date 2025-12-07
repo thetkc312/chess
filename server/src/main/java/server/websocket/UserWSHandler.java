@@ -164,8 +164,10 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
                             ServerCommandSender.sendNotification(wsSessions.get(sessionID), connectNotification);
                         }
                     }
+                    return;
                 }
             }
+            throw new DatabaseException("The game the user has requested to connect to could not be located");
         } catch (DatabaseException e) {
             ServerCommandSender.sendError(rootUserSession, "There was an error connecting you to your game.");
             return;
@@ -201,9 +203,44 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
 
     }
 
-    private void processResign(String wsSessionID, UserGameCommand userGameCommand) {
-        //TODO: Implement resign processing
+    private void processResign(String rootSessionID, UserGameCommand userGameCommand) {
         System.out.println("Processing RESIGN message...");
+        WsContext rootUserSession = wsSessions.get(rootSessionID);
+        // Get the username corresponding to this user's authToken. It should only fail if the server has connection issues.
+        String rootUsername;
+        try {
+            rootUsername = getUsername(userGameCommand.getAuthToken());
+        } catch (DatabaseException e) {
+            ServerCommandSender.sendError(rootUserSession, "There was an error while extracting the username corresponding to this authentication token");
+            return;
+        }
 
+        int activeGameID = userGameCommand.getGameID();
+        try {
+            ArrayList<GameData> gameDataArrayList = dataAccess.listGames();
+            // Find which game this root user is in
+            for (GameData gameData : gameDataArrayList) {
+                if (gameData.gameID() == activeGameID) {
+                    // TODO: Implement a way to track whether a game has been ended. End a game if someone resigns. Do not let anybody resign from an ended game.
+                    ArrayList<String> allGameSessionIDs = gameSessions.get(gameData.gameID());
+                    String connectNotification = String.format("User %s, ", rootUsername);
+                    connectNotification += switch (findUserRole(rootUsername, gameData)) {
+                        case WHITE -> "the White Player, ";
+                        case BLACK -> "the Black Player, ";
+                        case OBSERVER -> throw new DatabaseException("Only players may resign from a game, not observers.");
+                    };
+                    connectNotification += "has resigned from the game.";
+                    // When root client sends RESIGN, server sends NOTIFICATION to all clients
+                    for (String sessionID : allGameSessionIDs) {
+                        ServerCommandSender.sendNotification(wsSessions.get(sessionID), connectNotification);
+                    }
+                    return;
+                }
+            }
+            throw new DatabaseException("The game the user has requested to resign from could not be located");
+        } catch (DatabaseException e) {
+            ServerCommandSender.sendError(rootUserSession, "There was an error resigning from your game.");
+            return;
+        }
     }
 }
