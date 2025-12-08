@@ -157,36 +157,25 @@ public class PostloginClient {
             }
 
             int activeGameID = parseGameID(params[0]);
-
             ChessGame.TeamColor teamColor;
             switch (params[1].toLowerCase()) {
                 case "white", "w" -> teamColor = ChessGame.TeamColor.WHITE;
                 case "black", "b" -> teamColor = ChessGame.TeamColor.BLACK;
                 default -> throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "");
             }
-            switch (teamColor) {
-                case WHITE:
-                    activeGameTracker.setGameID(activeGameID);
-                    activeGameTracker.setUserRole(UserRole.WHITE);
-                    break;
-                case BLACK:
-                    activeGameTracker.setGameID(activeGameID);
-                    activeGameTracker.setUserRole(UserRole.BLACK);
-                    break;
-            }
+            activeGameTracker.setGameID(activeGameID);
+            activeGameTracker.setUserTeam(teamColor);
 
             JoinGameBody joinGameBody = new JoinGameBody(activeGameID, teamColor);
             // Note that the gameID of the resulting game is discarded
             serverFacade.joinGame(joinGameBody, serverFacade.getAuthData().authToken());
 
             String result = "You have successfully joined the following game: \n\t";
-            GameListResponse gameListResponse = serverFacade.listGames(serverFacade.getAuthData().authToken());
-            ArrayList<GameData> gameDataList = gameListResponse.games();
-            GameData gameData = findGameData(activeGameID, gameDataList);
+            GameData gameData = getGameData(activeGameID);
             result += formatGameData(gameData);
 
-            // TODO: Implement transition to GameState in phase 6
             return new EvalResult(result, ClientStates.GAMEPLAY);
+
         } catch (ResponseException e) {
             String result = "There was an issue while joining a game: ";
             switch (e.responseStatus) {
@@ -212,17 +201,15 @@ public class PostloginClient {
             }
 
             int activeGameID = parseGameID(params[0]);
-
             activeGameTracker.setGameID(activeGameID);
             activeGameTracker.setUserRole(UserRole.OBSERVER);
 
             String result = "You are now observing the following game: \n\t";
-            GameListResponse gameListResponse = serverFacade.listGames(serverFacade.getAuthData().authToken());
-            ArrayList<GameData> gameDataList = gameListResponse.games();
-            GameData gameData = findGameData(activeGameID, gameDataList);
+            GameData gameData = getGameData(activeGameID);
             result += formatGameData(gameData);
 
             return new EvalResult(result, ClientStates.GAMEPLAY);
+
         } catch (ResponseException e) {
             String result = "There was an issue while trying to observe a game: ";
             switch (e.responseStatus) {
@@ -256,6 +243,15 @@ public class PostloginClient {
         return fullGameID;
     }
 
+    private GameData getGameData(int activeGameID) throws ResponseException {
+        GameListResponse gameListResponse = serverFacade.listGames(serverFacade.getAuthData().authToken());
+        GameData gameData = gameListResponse.findGameData(activeGameID);
+        if (gameData == null) {
+            throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "No game with the provided gameID could be located.");
+        }
+        return gameData;
+    }
+
     private String formatGameData(GameData gameData) {
         String uiGameData = "";
         uiGameData += gameData.gameName();
@@ -271,14 +267,5 @@ public class PostloginClient {
             return "_____";
         }
         return playerName;
-    }
-
-    private GameData findGameData(int gameID, ArrayList<GameData> listGameData) {
-        for (GameData gameData : listGameData) {
-            if (gameData.gameID() == gameID) {
-                return gameData;
-            }
-        }
-        throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "No game with the provided gameID could be located.");
     }
 }
