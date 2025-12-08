@@ -7,6 +7,7 @@ import ui.client.PostloginClient;
 import ui.client.PreloginClient;
 import ui.states.ClientStates;
 
+import java.net.ConnectException;
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -28,7 +29,7 @@ public class Repl {
         evalResult = new EvalResult("", ClientStates.PRELOGIN);
     }
 
-    public void run() {
+    public void run() throws ConnectException {
         System.out.println("Enjoy your time playing chess locally on this machine!");
         System.out.println();
 

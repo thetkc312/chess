@@ -1,4 +1,4 @@
-package server.websocket;
+package websocket;
 
 public enum UserRole {
     WHITE,

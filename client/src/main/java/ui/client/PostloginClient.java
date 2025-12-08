@@ -8,7 +8,6 @@ import model.GameData;
 import server.ResponseException;
 import server.ServerFacade;
 import server.StatusReader;
-import ui.BoardRenderer;
 import ui.states.ClientStates;
 
 import java.util.ArrayList;
@@ -167,14 +166,12 @@ public class PostloginClient {
 
             String result = "You have successfully joined the following game: \n\t";
             GameListResponse gameListResponse = serverFacade.listGames(serverFacade.getAuthData().authToken());
-            ArrayList<GameData> gameListData = gameListResponse.games();
-            GameData gameData = findGameData(fullGameID, gameListData);
+            ArrayList<GameData> gameDataList = gameListResponse.games();
+            GameData gameData = findGameData(fullGameID, gameDataList);
             result += formatGameData(gameData);
-            result += "\n\n";
-            result += BoardRenderer.renderBoard(gameData.game(), teamColor);
 
             // TODO: Implement transition to GameState in phase 6
-            return new EvalResult(result, MY_STATE);
+            return new EvalResult(result, ClientStates.GAMEPLAY);
         } catch (ResponseException e) {
             String result = "There was an issue while joining a game: ";
             switch (e.responseStatus) {
@@ -206,10 +203,8 @@ public class PostloginClient {
             ArrayList<GameData> gameDataList = gameListResponse.games();
             GameData gameData = findGameData(fullGameID, gameDataList);
             result += formatGameData(gameData);
-            result += "\n\n";
-            result += BoardRenderer.renderBoard(gameData.game(), ChessGame.TeamColor.WHITE);
 
-            return new EvalResult(result, MY_STATE);
+            return new EvalResult(result, ClientStates.GAMEPLAY);
         } catch (ResponseException e) {
             String result = "There was an issue while trying to observe a game: ";
             switch (e.responseStatus) {

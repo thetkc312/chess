@@ -9,6 +9,7 @@ import dataaccess.DataAccess;
 import dataaccess.DatabaseException;
 import io.javalin.websocket.*;
 import model.GameData;
+import websocket.UserRole;
 import websocket.commands.UserGameCommand;
 import websocket.commands.UserMoveCommand;
 
