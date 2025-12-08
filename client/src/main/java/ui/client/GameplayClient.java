@@ -1,10 +1,15 @@
 package ui.client;
 
-import chess.ChessGame;
+import chess.ChessPosition;
+import endpointresponses.GameListResponse;
+import model.GameData;
+import server.ResponseException;
 import server.ServerFacade;
+import server.StatusReader;
 import server.websocket.ActiveGameTracker;
 import server.websocket.ServerMessageObserver;
 import server.websocket.WebSocketFacade;
+import ui.BoardRenderer;
 import ui.states.ClientStates;
 
 import java.net.ConnectException;
@@ -17,7 +22,6 @@ public class GameplayClient {
     private final ServerMessageObserver serverMessageObserver;
 
     private WebSocketFacade webSocketFacade = null;
-    private ChessGame chessGameLatestVersion = null;
 
     public GameplayClient(ServerFacade serverFacade, ActiveGameTracker activeGameTracker) {
         this.serverFacade = serverFacade;
@@ -56,7 +60,7 @@ public class GameplayClient {
 
     private EvalResult help() {
         String result = """
-        Here are the actions available to you while in a game:
+        Here are the actions available to you while in a game (write piece positions as <FILE><RANK>):
         \thelp - see the possible commands
         \tredraw - draw the board again
         \tleave - exit this game
@@ -69,10 +73,12 @@ public class GameplayClient {
     }
 
     private EvalResult redraw() {
-        // TODO: Implement rendering redraw results with standard HTTP request to get board
-        serverFacade.listGames(serverFacade.getAuthData().authToken());
-        // Update chessGameLatestVersion;
-        return new EvalResult("", MY_STATE);
+        GameData gameData = getGameData(activeGameTracker.getGameID());
+        String result = "Redrawing game: \n\t";
+        result += formatGameData(gameData);
+        result += "\n\n";
+        result += BoardRenderer.renderBoard(gameData.game(), activeGameTracker.getUserTeam());
+        return new EvalResult(result, MY_STATE);
     }
 
     private EvalResult leave() {
@@ -97,8 +103,55 @@ public class GameplayClient {
     }
 
     private EvalResult show(String[] params) {
-        // TODO: Implement rendering show results with standard HTTP request to get board
-        serverFacade.listGames(serverFacade.getAuthData().authToken());
-        return new EvalResult("", MY_STATE);
+        try {
+            if (params.length != 1) {
+                throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
+            }
+
+            ChessPosition piecePosition = ChessPosition.positionFromFileRank(params[0]);
+
+            GameData gameData = getGameData(activeGameTracker.getGameID());
+            String result = "Showing legal moves for piece at %s in game: \n\t".formatted(piecePosition.getFileRank());
+            result += formatGameData(gameData);
+            result += "\n\n";
+            result += BoardRenderer.renderBoardMoves(gameData.game(), activeGameTracker.getUserTeam(), piecePosition);
+            return new EvalResult(result, MY_STATE);
+
+        } catch (IllegalArgumentException|ResponseException e) {
+            String result = "There was an issue while trying show the legal moves for a piece.";
+            result += """
+            \nBe sure to request to show the legal moves for a piece as follows:
+            \tshow <file><rank> - watch a game as a spectator
+            \t\ti.e. show a1
+            
+            """;
+            return new EvalResult(result, MY_STATE);
+        }
+    }
+
+    private GameData getGameData(int activeGameID) throws ResponseException {
+        GameListResponse gameListResponse = serverFacade.listGames(serverFacade.getAuthData().authToken());
+        GameData gameData = gameListResponse.findGameData(activeGameID);
+        if (gameData == null) {
+            throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "No game with the provided gameID could be located.");
+        }
+        return gameData;
+    }
+
+    private String formatGameData(GameData gameData) {
+        String uiGameData = "";
+        uiGameData += gameData.gameName();
+        uiGameData += ": White Team - ";
+        uiGameData += representPlayerName(gameData.whiteUsername());
+        uiGameData += " | Black Team - ";
+        uiGameData += representPlayerName(gameData.blackUsername());
+        return uiGameData;
+    }
+
+    private String representPlayerName(String playerName) {
+        if (playerName == null) {
+            return "_____";
+        }
+        return playerName;
     }
 }

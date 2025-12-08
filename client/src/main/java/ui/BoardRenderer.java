@@ -3,6 +3,7 @@ package ui;
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPiece;
+import chess.ChessPosition;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,15 +49,16 @@ public class BoardRenderer {
         return processedBoard;
     }
 
-    public static String renderBoardMoves(ChessGame game, ChessGame.TeamColor teamColor, Collection<ChessMove> moveOptions) {
+    public static String renderBoardMoves(ChessGame game, ChessGame.TeamColor teamColor, ChessPosition chessPosition) {
         String processedBoard = rawBoard(game);
         processedBoard = wrapBoard(processedBoard);
+        // TODO: Evaluate moveOptions
         if (teamColor == ChessGame.TeamColor.BLACK) {
             processedBoard = rotateBoard(processedBoard);
             // TODO: Add rotation filtering for moveOptions
         }
+        // TODO: Implement special coloration for moveOptions
         processedBoard = padBoard(processedBoard);
-        processedBoard = formatUnicode(processedBoard, moveOptions);
         return processedBoard;
 
     }
