@@ -1,7 +1,7 @@
 package dataaccess;
 
-import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
@@ -236,7 +236,7 @@ public class DataAccessMySql implements DataAccess {
     }
 
     @Override
-    public void joinGame(String username, ChessGame.TeamColor teamColor, int gameID) throws DatabaseException {
+    public void joinGame(int gameID, String username, ChessGame.TeamColor teamColor) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
             String gameFindStatement =
                     """
@@ -306,17 +306,17 @@ public class DataAccessMySql implements DataAccess {
     }
 
     @Override
-    public void updateGameBoard(ChessBoard chessBoard) throws DatabaseException {
+    public void executeChessMove(int gameID, ChessMove chessMove) throws DatabaseException {
         // TODO: Implement actual DataAccessMySql.updateGameBoard
     }
 
     @Override
-    public void endGame(int gameID) {
+    public void endGame(int gameID) throws DatabaseException {
         // TODO: Implement actual DataAccessMySql.endGame
     }
 
     @Override
-    public void removeUser(String username, ChessGame.TeamColor teamColor, int gameID) throws DatabaseException {
+    public void removeUser(int gameID, String username, ChessGame.TeamColor teamColor) throws DatabaseException {
         // TODO: Implement actual DataAccessMySql.removeUser
     }
 

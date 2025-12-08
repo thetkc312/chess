@@ -267,8 +267,8 @@ public class DataAccessTest {
     void joinGameValid() throws DatabaseException {
         addGameBob();
 
-        dataAccess.joinGame(userBob.username(), ChessGame.TeamColor.WHITE, gameData.gameID());
-        dataAccess.joinGame(userBot.username(), ChessGame.TeamColor.BLACK, gameData.gameID());
+        dataAccess.joinGame(gameData.gameID(), userBob.username(), ChessGame.TeamColor.WHITE);
+        dataAccess.joinGame(gameData.gameID(), userBot.username(), ChessGame.TeamColor.BLACK);
         GameData newGameData = new GameData(gameData.gameID(), userBob.username(), userBot.username(), gameData.gameName(), gameData.game(), true);
 
         try (Connection connection = DatabaseManager.getConnection()) {
@@ -291,7 +291,7 @@ public class DataAccessTest {
             throw new DatabaseException(String.format("Unable to check if user exists in dataaccess: %s", ex.getMessage()));
         }
 
-        dataAccess.joinGame(userBob.username(), ChessGame.TeamColor.BLACK, gameData.gameID());
+        dataAccess.joinGame(gameData.gameID(), userBob.username(), ChessGame.TeamColor.BLACK);
         newGameData = new GameData(gameData.gameID(), userBob.username(), userBob.username(), gameData.gameName(), gameData.game(), true);
 
         try (Connection connection = DatabaseManager.getConnection()) {
@@ -316,11 +316,11 @@ public class DataAccessTest {
     }
     @Test
     void joinGameInvalid() throws DatabaseException {
-        assertThrows(DatabaseException.class, () -> dataAccess.joinGame(userBob.username(), ChessGame.TeamColor.WHITE, gameData.gameID()));
+        assertThrows(DatabaseException.class, () -> dataAccess.joinGame(gameData.gameID(), userBob.username(), ChessGame.TeamColor.WHITE));
 
         addGameBob();
 
-        assertThrows(DatabaseException.class, () -> dataAccess.joinGame(userBob.username(), ChessGame.TeamColor.WHITE, gameData.gameID()+1));
+        assertThrows(DatabaseException.class, () -> dataAccess.joinGame(gameData.gameID()+1, userBob.username(), ChessGame.TeamColor.WHITE));
     }
 
     @Test

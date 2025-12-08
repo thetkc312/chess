@@ -1,7 +1,7 @@
 package dataaccess;
 
-import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessMove;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -29,15 +29,15 @@ public interface DataAccess {
 
     boolean gameExists(int gameID) throws DatabaseException;
 
-    void joinGame(String username, ChessGame.TeamColor teamColor, int gameID) throws DatabaseException; // Response is empty
+    void joinGame(int gameID, String username, ChessGame.TeamColor teamColor) throws DatabaseException; // Response is empty
 
     boolean roleOpen(int gameID, ChessGame.TeamColor teamColor) throws DatabaseException;
 
-    void updateGameBoard(ChessBoard chessBoard) throws DatabaseException;
+    void executeChessMove(int gameID, ChessMove chessMove) throws DatabaseException;
 
-    void endGame(int gameID);
+    void endGame(int gameID) throws DatabaseException;
 
-    void removeUser(String username, ChessGame.TeamColor teamColor, int gameID) throws DatabaseException;
+    void removeUser(int gameID, String username, ChessGame.TeamColor teamColor) throws DatabaseException;
 
     ArrayList<GameData> listGames() throws DatabaseException;
 

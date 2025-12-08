@@ -80,7 +80,7 @@ public class Service {
             throw new AlreadyTakenException("403: Game role (Black/White) already taken.");
         }
         String username = dataAccess.getUser(authToken);
-        dataAccess.joinGame(username, joinGameBody.playerColor(), joinGameBody.gameID());
+        dataAccess.joinGame(joinGameBody.gameID(), username, joinGameBody.playerColor());
     }
 
     public void clear()
