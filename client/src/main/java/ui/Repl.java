@@ -1,6 +1,7 @@
 package ui;
 
 import server.ServerFacade;
+import server.websocket.ActiveGameTracker;
 import ui.client.EvalResult;
 import ui.client.GameplayClient;
 import ui.client.PostloginClient;
@@ -21,10 +22,11 @@ public class Repl {
 
     public Repl(String serverURL) {
         ServerFacade serverFacade = new ServerFacade(serverURL);
+        ActiveGameTracker activeGameTracker = new ActiveGameTracker(0, null);
 
         preloginClient = new PreloginClient(serverFacade);
-        postloginClient = new PostloginClient(serverFacade);
-        gameplayClient = new GameplayClient(serverFacade);
+        postloginClient = new PostloginClient(serverFacade, activeGameTracker);
+        gameplayClient = new GameplayClient(serverFacade, activeGameTracker);
 
         evalResult = new EvalResult("", ClientStates.PRELOGIN);
     }

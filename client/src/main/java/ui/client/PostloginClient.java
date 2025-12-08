@@ -8,7 +8,9 @@ import model.GameData;
 import server.ResponseException;
 import server.ServerFacade;
 import server.StatusReader;
+import server.websocket.ActiveGameTracker;
 import ui.states.ClientStates;
+import websocket.UserRole;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,12 +19,15 @@ public class PostloginClient {
 
     private final ServerFacade serverFacade;
     private static final ClientStates MY_STATE = ClientStates.POSTLOGIN;
+    private final ActiveGameTracker activeGameTracker;
 
+    // uiGameID : dbGameID
     private HashMap<Integer, Integer> gamesListed;
 
-    public PostloginClient(ServerFacade serverFacade) {
+    public PostloginClient(ServerFacade serverFacade, ActiveGameTracker activeGameTracker) {
         this.serverFacade = serverFacade;
         this.gamesListed = new HashMap<>();
+        this.activeGameTracker = activeGameTracker;
     }
 
     public EvalResult eval(String cmd, String[] params) {
@@ -151,7 +156,7 @@ public class PostloginClient {
                 throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
             }
 
-            int fullGameID = parseGameID(params[0]);
+            int activeGameID = parseGameID(params[0]);
 
             ChessGame.TeamColor teamColor;
             switch (params[1].toLowerCase()) {
@@ -159,15 +164,25 @@ public class PostloginClient {
                 case "black", "b" -> teamColor = ChessGame.TeamColor.BLACK;
                 default -> throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "");
             }
+            switch (teamColor) {
+                case WHITE:
+                    activeGameTracker.setGameID(activeGameID);
+                    activeGameTracker.setUserRole(UserRole.WHITE);
+                    break;
+                case BLACK:
+                    activeGameTracker.setGameID(activeGameID);
+                    activeGameTracker.setUserRole(UserRole.BLACK);
+                    break;
+            }
 
-            JoinGameBody joinGameBody = new JoinGameBody(fullGameID, teamColor);
+            JoinGameBody joinGameBody = new JoinGameBody(activeGameID, teamColor);
             // Note that the gameID of the resulting game is discarded
             serverFacade.joinGame(joinGameBody, serverFacade.getAuthData().authToken());
 
             String result = "You have successfully joined the following game: \n\t";
             GameListResponse gameListResponse = serverFacade.listGames(serverFacade.getAuthData().authToken());
             ArrayList<GameData> gameDataList = gameListResponse.games();
-            GameData gameData = findGameData(fullGameID, gameDataList);
+            GameData gameData = findGameData(activeGameID, gameDataList);
             result += formatGameData(gameData);
 
             // TODO: Implement transition to GameState in phase 6
@@ -196,12 +211,15 @@ public class PostloginClient {
                 throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
             }
 
-            int fullGameID = parseGameID(params[0]);
+            int activeGameID = parseGameID(params[0]);
+
+            activeGameTracker.setGameID(activeGameID);
+            activeGameTracker.setUserRole(UserRole.OBSERVER);
 
             String result = "You are now observing the following game: \n\t";
             GameListResponse gameListResponse = serverFacade.listGames(serverFacade.getAuthData().authToken());
             ArrayList<GameData> gameDataList = gameListResponse.games();
-            GameData gameData = findGameData(fullGameID, gameDataList);
+            GameData gameData = findGameData(activeGameID, gameDataList);
             result += formatGameData(gameData);
 
             return new EvalResult(result, ClientStates.GAMEPLAY);
@@ -221,7 +239,6 @@ public class PostloginClient {
             return new EvalResult(result, MY_STATE);
         }
     }
-
 
     private int parseGameID(String gameIDParam) throws ResponseException {
         int uiGameID;

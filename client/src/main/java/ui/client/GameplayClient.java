@@ -1,6 +1,10 @@
 package ui.client;
 
+import chess.ChessBoard;
+import chess.ChessGame;
 import server.ServerFacade;
+import server.websocket.ActiveGameTracker;
+import server.websocket.ServerMessageObserver;
 import server.websocket.WebSocketFacade;
 import ui.states.ClientStates;
 import ui.BoardRenderer;
@@ -8,19 +12,24 @@ import ui.BoardRenderer;
 import java.net.ConnectException;
 
 public class GameplayClient {
-
-    private final ServerFacade serverFacade;
     private static final ClientStates MY_STATE = ClientStates.GAMEPLAY;
 
-    private WebSocketFacade webSocketFacade = null;
+    private final ServerFacade serverFacade;
+    private final ActiveGameTracker activeGameTracker;
+    private final ServerMessageObserver serverMessageObserver;
 
-    public GameplayClient(ServerFacade serverFacade) {
+    private WebSocketFacade webSocketFacade = null;
+    private ChessGame chessGameLatestVersion = null;
+
+    public GameplayClient(ServerFacade serverFacade, ActiveGameTracker activeGameTracker) {
         this.serverFacade = serverFacade;
+        this.activeGameTracker = activeGameTracker;
+        this.serverMessageObserver = new ServerMessageObserver();
     }
 
     public void startWebSocket() throws ConnectException {
         try {
-            this.webSocketFacade = new WebSocketFacade();
+            this.webSocketFacade = new WebSocketFacade(serverMessageObserver);
         } catch (Exception e) {
             throw new ConnectException(e.getMessage());
         }
@@ -29,6 +38,9 @@ public class GameplayClient {
     public EvalResult eval(String cmd, String[] params) throws ConnectException {
         if (this.webSocketFacade == null) {
             startWebSocket();
+        }
+        if (activeGameTracker.getUserRole() == null) {
+            throw new ConnectException("In order to start the Gameplay Client, the activeGameTracker must be updated to reflect the role of the player in their game.");
         }
         return switch (cmd) {
             case "help", "h" -> help();
@@ -56,22 +68,34 @@ public class GameplayClient {
     }
 
     private EvalResult redraw() {
+        // TODO: Implement rendering redraw results with standard HTTP request to get board
+        serverFacade.listGames(serverFacade.getAuthData().authToken());
+        // Update chessGameLatestVersion;
         return new EvalResult("", MY_STATE);
     }
 
     private EvalResult leave() {
+        // TODO: Implement rendering leave results with WS communication to leave game and update others
+        webSocketFacade.leaveGame(activeGameTracker, serverFacade.getAuthData());
         return new EvalResult("", ClientStates.POSTLOGIN);
     }
 
     private EvalResult move(String[] params) {
+        // TODO: Implement rendering move results with WS communication to perform move and update others
+        // Update chessGameLatestVersion;
+        webSocketFacade.moveInGame(activeGameTracker, serverFacade.getAuthData());
         return new EvalResult("", MY_STATE);
     }
 
     private EvalResult resign() {
+        // TODO: Implement rendering resign results with WS communication to resign game and update others
+        webSocketFacade.forfeitGame(activeGameTracker, serverFacade.getAuthData());
         return new EvalResult("", MY_STATE);
     }
 
     private EvalResult show(String[] params) {
+        // TODO: Implement rendering show results with local variable
+        // Use chessGameLatestVersion
         return new EvalResult("", MY_STATE);
     }
 }
