@@ -1,7 +1,8 @@
 package dataaccess;
 
-import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -99,22 +100,47 @@ public class DataAccessMemory implements DataAccess {
     }
 
     @Override
-    public void updateGameBoard(ChessBoard chessBoard) throws DatabaseException {
-        // TODO: Implement DataAccessMemory.updateGameBoard
+    public void executeChessMove(int gameID, ChessMove chessMove) throws DatabaseException {
+        ChessGame chessGame = gameMap.get(gameID).game();
+        try {
+            chessGame.makeMove(chessMove);
+        } catch (InvalidMoveException e) {
+            throw new DatabaseException("This is an invalid move and could not be made.", e);
+        }
     }
 
     @Override
-    public void endGame(int gameID) {
-        // TODO: Implement DataAccessMemory.endGame
+    public void endGame(int gameID) throws DatabaseException {
+        GameData oldGame = gameMap.get(gameID);
+        GameData newGameData = new GameData(gameID, oldGame.whiteUsername(), oldGame.blackUsername(), oldGame.gameName(), oldGame.game(), false);
+        gameMap.put(gameID, newGameData);
     }
 
     @Override
-    public void removeUser(String username, ChessGame.TeamColor teamColor, int gameID) throws DatabaseException {
-        // TODO: Implement DataAccessMemory.removeUser
+    public void removeUser(int gameID, String username, ChessGame.TeamColor teamColor) throws DatabaseException {
+        String whiteUsername = gameMap.get(gameID).whiteUsername();
+        String blackUsername = gameMap.get(gameID).blackUsername();
+        if (teamColor == ChessGame.TeamColor.BLACK) {
+            if (username.equals(blackUsername)) {
+                blackUsername = null;
+            } else {
+                throw new DatabaseException(String.format("Failed removing %s from game #%d: Does not match Black username %s", username, gameID, blackUsername));
+            }
+        } else {
+            if (username.equals(whiteUsername)) {
+                whiteUsername = null;
+            } else {
+                throw new DatabaseException(String.format("Failed removing %s from game #%d: Does not match Black username %s", username, gameID, blackUsername));
+            }
+        }
+
+        ChessGame oldGame = gameMap.get(gameID).game();
+        GameData newGameData = new GameData(gameID, whiteUsername, blackUsername, gameMap.get(gameID).gameName(), oldGame, true);
+        gameMap.put(gameID, newGameData);
     }
 
     @Override
-    public void joinGame(String username, ChessGame.TeamColor teamColor, int gameID) {
+    public void joinGame(int gameID, String username, ChessGame.TeamColor teamColor) {
         String whiteUsername = gameMap.get(gameID).whiteUsername();
         String blackUsername = gameMap.get(gameID).blackUsername();
         if (teamColor == ChessGame.TeamColor.BLACK) {
