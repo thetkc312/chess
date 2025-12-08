@@ -15,19 +15,19 @@ public class ServerCommandSender {
     private static final Gson serializer = new Gson();
 
     public static void sendLoadGame(WsContext ctx, GameData game) {
-        System.out.println("Sending LOAD_GAME message...");
+        System.out.println("Sending LOAD_GAME message..." + game.toString());
         ServerMessage serverMessage = new ServerLoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
         sendMessage(serverMessage, ctx);
     }
 
     public static void sendError(WsContext ctx, String errorMessage) {
-        System.out.println("Sending ERROR message...");
+        System.out.println("Sending ERROR message..." + errorMessage);
         ServerMessage serverMessage = new ServerErrorMessage(ServerMessage.ServerMessageType.ERROR, errorMessage);
         sendMessage(serverMessage, ctx);
     }
 
     public static void sendNotification(WsContext ctx, String message) {
-        System.out.println("Sending NOTIFICATION message...");
+        System.out.println("Sending NOTIFICATION message: " + message);
         ServerMessage serverMessage = new ServerNotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         sendMessage(serverMessage, ctx);
     }
