@@ -276,7 +276,6 @@ public class DataAccessMySql implements DataAccess {
         } catch (SQLException ex) {
             throw new DatabaseException(String.format("Unable to join user to game in dataaccess: %s", ex.getMessage()));
         }
-
     }
 
     @Override
@@ -312,12 +311,79 @@ public class DataAccessMySql implements DataAccess {
 
     @Override
     public void endGame(int gameID) throws DatabaseException {
-        // TODO: Implement actual DataAccessMySql.endGame
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String gameFindStatement =
+                    """
+                    SELECT game FROM game_data WHERE gameID = ?
+                    """;
+            GameData oldGame;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameFindStatement)) {
+                preparedStatement.setInt(1, gameID);
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    rs.next();
+                    String gameJson = rs.getString("game");
+                    oldGame = new Gson().fromJson(gameJson, GameData.class);
+                }
+            }
+
+            GameData updatedGameData = new GameData(oldGame.gameID(), oldGame.whiteUsername(), oldGame.blackUsername(), oldGame.gameName(), oldGame.game(), false);
+
+
+            String gameUpdateStatement =
+                    """
+                    UPDATE game_data SET game = ? WHERE gameID = ?
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameUpdateStatement)) {
+                preparedStatement.setString(1, new Gson().toJson(updatedGameData));
+                preparedStatement.setInt(2, gameID);
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to update game in dataaccess: %s", ex.getMessage()));
+        }
     }
 
     @Override
     public void removeUser(int gameID, String username, ChessGame.TeamColor teamColor) throws DatabaseException {
-        // TODO: Implement actual DataAccessMySql.removeUser
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String gameFindStatement =
+                    """
+                    SELECT game FROM game_data WHERE gameID = ?
+                    """;
+            GameData gameData;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameFindStatement)) {
+                preparedStatement.setInt(1, gameID);
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    rs.next();
+                    String gameJson = rs.getString("game");
+                    gameData = new Gson().fromJson(gameJson, GameData.class);
+                }
+            }
+
+            String userColor;
+            GameData updatedGameData;
+            if (teamColor == ChessGame.TeamColor.WHITE) {
+                userColor = "whiteUsername";
+                updatedGameData = new GameData(gameData.gameID(), null, gameData.blackUsername(), gameData.gameName(), gameData.game(), true);
+            } else {
+                userColor = "blackUsername";
+                updatedGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), null, gameData.gameName(), gameData.game(), true);
+            }
+
+
+            String gameUpdateStatement =
+                    """
+                    UPDATE game_data SET %s = ?, game = ? WHERE gameID = ?
+                    """.formatted(userColor);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameUpdateStatement)) {
+                preparedStatement.setString(1, null);
+                preparedStatement.setString(2, new Gson().toJson(updatedGameData));
+                preparedStatement.setInt(3, gameID);
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to join user to game in dataaccess: %s", ex.getMessage()));
+        }
     }
 
     @Override
