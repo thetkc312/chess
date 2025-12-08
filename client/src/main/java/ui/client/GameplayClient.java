@@ -1,18 +1,35 @@
 package ui.client;
 
 import server.ServerFacade;
+import server.websocket.WebSocketFacade;
 import ui.states.ClientStates;
+import ui.BoardRenderer;
+
+import java.net.ConnectException;
 
 public class GameplayClient {
 
     private final ServerFacade serverFacade;
     private static final ClientStates MY_STATE = ClientStates.GAMEPLAY;
 
+    private WebSocketFacade webSocketFacade = null;
+
     public GameplayClient(ServerFacade serverFacade) {
         this.serverFacade = serverFacade;
     }
 
-    public EvalResult eval(String cmd, String[] params) {
+    public void startWebSocket() throws ConnectException {
+        try {
+            this.webSocketFacade = new WebSocketFacade();
+        } catch (Exception e) {
+            throw new ConnectException(e.getMessage());
+        }
+    }
+
+    public EvalResult eval(String cmd, String[] params) throws ConnectException {
+        if (this.webSocketFacade == null) {
+            startWebSocket();
+        }
         return switch (cmd) {
             case "help", "h" -> help();
             case "redraw", "r" -> redraw();
@@ -39,22 +56,22 @@ public class GameplayClient {
     }
 
     private EvalResult redraw() {
-        return null;
+        return new EvalResult("", MY_STATE);
     }
 
     private EvalResult leave() {
-        return null;
+        return new EvalResult("", ClientStates.POSTLOGIN);
     }
 
     private EvalResult move(String[] params) {
-        return null;
+        return new EvalResult("", MY_STATE);
     }
 
     private EvalResult resign() {
-        return null;
+        return new EvalResult("", MY_STATE);
     }
 
     private EvalResult show(String[] params) {
-        return null;
+        return new EvalResult("", MY_STATE);
     }
 }
