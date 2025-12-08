@@ -3,10 +3,6 @@ package server.websocket;
 import com.google.gson.Gson;
 import jakarta.websocket.*;
 import model.AuthData;
-import websocket.messages.ServerErrorMessage;
-import websocket.messages.ServerLoadGameMessage;
-import websocket.messages.ServerMessage;
-import websocket.messages.ServerNotificationMessage;
 
 import java.net.URI;
 
@@ -14,9 +10,13 @@ public class WebSocketFacade extends Endpoint {
 
     private final Session session;
     private final ServerMessageObserver serverMessageObserver;
+    private final ActiveGameTracker activeGameTracker;
+    private final AuthData authData;
 
-    public WebSocketFacade(ServerMessageObserver serverMessageObserver) throws Exception {
+    public WebSocketFacade(ServerMessageObserver serverMessageObserver, ActiveGameTracker activeGameTracker, AuthData authData) throws Exception {
         this.serverMessageObserver = serverMessageObserver;
+        this.activeGameTracker = activeGameTracker;
+        this.authData = authData;
         URI serverUri = new URI("ws://localhost:8080/ws");
         WebSocketContainer webSocketContainer = ContainerProvider.getWebSocketContainer();
         this.session = webSocketContainer.connectToServer(this, serverUri);
@@ -24,15 +24,11 @@ public class WebSocketFacade extends Endpoint {
         this.session.addMessageHandler(new MessageHandler.Whole<String>() {
             @Override
             public void onMessage(String wsMessageJson) {
-                Gson serializer = new Gson();
-                ServerMessage serverMessage = serializer.fromJson(wsMessageJson, ServerMessage.class);
-                switch (serverMessage.getServerMessageType()) {
-                    case LOAD_GAME -> serverMessageObserver.processLoadGame(serializer.fromJson(wsMessageJson, ServerLoadGameMessage.class));
-                    case ERROR -> serverMessageObserver.processError(serializer.fromJson(wsMessageJson, ServerErrorMessage.class));
-                    case NOTIFICATION -> serverMessageObserver.processNotification(serializer.fromJson(wsMessageJson, ServerNotificationMessage.class));
-                }
+                serverMessageObserver.registerServerMessage(wsMessageJson);
             }
         });
+
+        connectGame();
     }
 
     @Override
@@ -40,18 +36,22 @@ public class WebSocketFacade extends Endpoint {
 
     }
 
-    public void leaveGame(ActiveGameTracker activeGameTracker, AuthData authData) {
-        // TODO: Implement rendering leave results with WS communication to leave game and update others
+    public void connectGame() {
+        // TODO: Implement sending connect message with WS communication to leave game and update others
+    }
+
+    public void leaveGame() {
+        // TODO: Implement sending leave message with WS communication to leave game and update others
 
     }
 
-    public void moveInGame(ActiveGameTracker activeGameTracker, AuthData authData) {
-        // TODO: Implement rendering move results with WS communication to perform move and update others
+    public void moveInGame() {
+        // TODO: Implement sending move message with WS communication to perform move and update others
 
     }
 
-    public void forfeitGame(ActiveGameTracker activeGameTracker, AuthData authData) {
-        // TODO: Implement rendering resign results with WS communication to resign game and update others
+    public void forfeitGame() {
+        // TODO: Implement sending resign message with WS communication to resign game and update others
 
     }
 }

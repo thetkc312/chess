@@ -1,13 +1,11 @@
 package ui.client;
 
-import chess.ChessBoard;
 import chess.ChessGame;
 import server.ServerFacade;
 import server.websocket.ActiveGameTracker;
 import server.websocket.ServerMessageObserver;
 import server.websocket.WebSocketFacade;
 import ui.states.ClientStates;
-import ui.BoardRenderer;
 
 import java.net.ConnectException;
 
@@ -29,7 +27,10 @@ public class GameplayClient {
 
     public void startWebSocket() throws ConnectException {
         try {
-            this.webSocketFacade = new WebSocketFacade(serverMessageObserver);
+            Thread wsListenerThread = new Thread(serverMessageObserver::messageListener);
+            wsListenerThread.setDaemon(true);
+            wsListenerThread.start();
+            this.webSocketFacade = new WebSocketFacade(serverMessageObserver, activeGameTracker, serverFacade.getAuthData());
         } catch (Exception e) {
             throw new ConnectException(e.getMessage());
         }
@@ -76,26 +77,28 @@ public class GameplayClient {
 
     private EvalResult leave() {
         // TODO: Implement rendering leave results with WS communication to leave game and update others
-        webSocketFacade.leaveGame(activeGameTracker, serverFacade.getAuthData());
+        webSocketFacade.leaveGame();
+        webSocketFacade = null;
+        serverMessageObserver.stop();
         return new EvalResult("", ClientStates.POSTLOGIN);
     }
 
     private EvalResult move(String[] params) {
         // TODO: Implement rendering move results with WS communication to perform move and update others
         // Update chessGameLatestVersion;
-        webSocketFacade.moveInGame(activeGameTracker, serverFacade.getAuthData());
+        webSocketFacade.moveInGame();
         return new EvalResult("", MY_STATE);
     }
 
     private EvalResult resign() {
         // TODO: Implement rendering resign results with WS communication to resign game and update others
-        webSocketFacade.forfeitGame(activeGameTracker, serverFacade.getAuthData());
+        webSocketFacade.forfeitGame();
         return new EvalResult("", MY_STATE);
     }
 
     private EvalResult show(String[] params) {
-        // TODO: Implement rendering show results with local variable
-        // Use chessGameLatestVersion
+        // TODO: Implement rendering show results with standard HTTP request to get board
+        serverFacade.listGames(serverFacade.getAuthData().authToken());
         return new EvalResult("", MY_STATE);
     }
 }

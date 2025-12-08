@@ -32,8 +32,7 @@ public class Repl {
     }
 
     public void run() throws ConnectException {
-        System.out.println("Enjoy your time playing chess locally on this machine!");
-        System.out.println();
+        ConsolePrinter.safePrint("Enjoy your time playing chess locally on this machine!\n");
 
         Scanner scanner = new Scanner(System.in);
         ClientStates lastState = null;
@@ -59,9 +58,8 @@ public class Repl {
                 case ClientStates.QUIT -> new EvalResult("Press enter again to confirm you would like to quit", ClientStates.QUIT);
             };
 
-            System.out.println(evalResult.result());
+            ConsolePrinter.safePrint(evalResult.result());
         }
-        System.out.println("Thanks for playing chess!");
-        System.out.println();
+        ConsolePrinter.safePrint("Thanks for playing chess!\n");
     }
 }
