@@ -30,7 +30,7 @@ public class Server {
         DataAccess dataAccess;
         try {
             dataAccess = new DataAccessMySql();
-            dataAccess = new DataAccessMemory();
+            //dataAccess = new DataAccessMemory();
         } catch (DatabaseException e) {
             System.out.println(e.getMessage());
             System.out.println("Starting server with DataAccessMemory instance instead.");
