@@ -24,7 +24,7 @@ public class TestFactory {
             return 300000L;
         }
 
-        return 3000L;
+        return 1500L;
     }
 
     public static GsonBuilder getGsonBuilder() {
