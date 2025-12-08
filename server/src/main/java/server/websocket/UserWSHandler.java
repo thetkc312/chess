@@ -256,9 +256,7 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
                     // If so, send a NOTIFICATION ServerMessage to all participants in this game
                     if (gameConditionNotification != null) {
                         for (String sessionID : allGameSessionIDs) {
-                            if (sessionID.equals(rootSessionID)) {
-                                ServerCommandSender.sendNotification(wsSessions.get(sessionID), gameConditionNotification);
-                            }
+                            ServerCommandSender.sendNotification(wsSessions.get(sessionID), gameConditionNotification);
                         }
                     }
                     return;
