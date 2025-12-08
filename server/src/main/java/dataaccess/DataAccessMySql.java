@@ -2,6 +2,7 @@ package dataaccess;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
@@ -306,7 +307,39 @@ public class DataAccessMySql implements DataAccess {
 
     @Override
     public void executeChessMove(int gameID, ChessMove chessMove) throws DatabaseException {
-        // TODO: Implement actual DataAccessMySql.updateGameBoard
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String gameFindStatement =
+                    """
+                    SELECT game FROM game_data WHERE gameID = ?
+                    """;
+            GameData gameData;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameFindStatement)) {
+                preparedStatement.setInt(1, gameID);
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    rs.next();
+                    String gameJson = rs.getString("game");
+                    gameData = new Gson().fromJson(gameJson, GameData.class);
+                }
+            }
+
+            try {
+                gameData.game().makeMove(chessMove);
+            } catch (InvalidMoveException e) {
+                throw new DatabaseException("This is an invalid move and could not be made.", e);
+            }
+
+            String gameUpdateStatement =
+                    """
+                    UPDATE game_data SET game = ? WHERE gameID = ?
+                    """;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(gameUpdateStatement)) {
+                preparedStatement.setString(1, new Gson().toJson(gameData));
+                preparedStatement.setInt(2, gameID);
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DatabaseException(String.format("Unable to execute move for game in dataaccess: %s", ex.getMessage()));
+        }
     }
 
     @Override
