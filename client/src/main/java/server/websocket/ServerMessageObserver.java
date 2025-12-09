@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import model.GameData;
 import ui.BoardRenderer;
 import ui.ConsolePrinter;
+import ui.client.GameGetter;
 import websocket.messages.ServerMessage;
 import websocket.messages.ServerLoadGameMessage;
 import websocket.messages.ServerErrorMessage;
@@ -55,7 +56,7 @@ public class ServerMessageObserver {
 
     private void processLoadGame(ServerLoadGameMessage loadGameMessage) {
         GameData gameData = loadGameMessage.getGame();
-        String result = formatGameData(gameData);
+        String result = GameGetter.formatGameData(gameData);
         result += "\n";
         result += BoardRenderer.renderBoard(gameData.game(), activeGameTracker.getUserTeam());
         ConsolePrinter.safePrint(result);
@@ -69,22 +70,5 @@ public class ServerMessageObserver {
     private void processNotification(ServerNotificationMessage notificationMessage) {
         String result = notificationMessage.getMessage();
         ConsolePrinter.safePrint(result);
-    }
-
-    private String formatGameData(GameData gameData) {
-        String uiGameData = "";
-        uiGameData += gameData.gameName();
-        uiGameData += ": White Team - ";
-        uiGameData += representPlayerName(gameData.whiteUsername());
-        uiGameData += " | Black Team - ";
-        uiGameData += representPlayerName(gameData.blackUsername());
-        return uiGameData;
-    }
-
-    private String representPlayerName(String playerName) {
-        if (playerName == null) {
-            return "_____";
-        }
-        return playerName;
     }
 }

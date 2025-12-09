@@ -132,7 +132,7 @@ public class PostloginClient {
                 for (int i = 1; i <= gameListData.size(); i++) {
                     GameData gameData = gameListData.get(i - 1);
                     gamesListed.put(i, gameData.gameID());
-                    result.append(String.format("\t%d) %s\n", i, formatGameData(gameData)));
+                    result.append(String.format("\t%d) %s\n", i, GameGetter.formatGameData(gameData)));
                 }
             }
 
@@ -171,8 +171,8 @@ public class PostloginClient {
             serverFacade.joinGame(joinGameBody, serverFacade.getAuthData().authToken());
 
             String result = "You have successfully joined the following game: \n\t";
-            GameData gameData = getGameData(activeGameID);
-            result += formatGameData(gameData);
+            GameData gameData = GameGetter.getGameData(activeGameID, serverFacade);
+            result += GameGetter.formatGameData(gameData);
 
             return new EvalResult(result, ClientStates.GAMEPLAY);
 
@@ -205,8 +205,8 @@ public class PostloginClient {
             activeGameTracker.setUserRole(UserRole.OBSERVER);
 
             String result = "You are now observing the following game: \n\t";
-            GameData gameData = getGameData(activeGameID);
-            result += formatGameData(gameData);
+            GameData gameData = GameGetter.getGameData(activeGameID, serverFacade);
+            result += GameGetter.formatGameData(gameData);
 
             return new EvalResult(result, ClientStates.GAMEPLAY);
 
@@ -241,31 +241,5 @@ public class PostloginClient {
             throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Provided integer does not match any listed games");
         }
         return fullGameID;
-    }
-
-    private GameData getGameData(int activeGameID) throws ResponseException {
-        GameListResponse gameListResponse = serverFacade.listGames(serverFacade.getAuthData().authToken());
-        GameData gameData = gameListResponse.findGameData(activeGameID);
-        if (gameData == null) {
-            throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "No game with the provided gameID could be located.");
-        }
-        return gameData;
-    }
-
-    private String formatGameData(GameData gameData) {
-        String uiGameData = "";
-        uiGameData += gameData.gameName();
-        uiGameData += ": White Team - ";
-        uiGameData += representPlayerName(gameData.whiteUsername());
-        uiGameData += " | Black Team - ";
-        uiGameData += representPlayerName(gameData.blackUsername());
-        return uiGameData;
-    }
-
-    private String representPlayerName(String playerName) {
-        if (playerName == null) {
-            return "_____";
-        }
-        return playerName;
     }
 }

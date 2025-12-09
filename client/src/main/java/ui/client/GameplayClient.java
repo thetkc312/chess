@@ -81,9 +81,9 @@ public class GameplayClient {
     }
 
     private EvalResult redraw() {
-        GameData gameData = getGameData(activeGameTracker.getGameID());
+        GameData gameData = GameGetter.getGameData(activeGameTracker.getGameID(), serverFacade);
         String result = "Redrawing game: \n\t";
-        result += formatGameData(gameData);
+        result += GameGetter.formatGameData(gameData);
         result += "\n\n";
         result += BoardRenderer.renderBoard(gameData.game(), activeGameTracker.getUserTeam());
         return new EvalResult(result, MY_STATE);
@@ -135,9 +135,9 @@ public class GameplayClient {
 
             ChessPosition piecePosition = ChessPosition.positionFromFileRank(params[0]);
 
-            GameData gameData = getGameData(activeGameTracker.getGameID());
+            GameData gameData = GameGetter.getGameData(activeGameTracker.getGameID(), serverFacade);
             String result = "Showing legal moves for piece at %s in game: \n\t".formatted(piecePosition.getFileRank());
-            result += formatGameData(gameData);
+            result += GameGetter.formatGameData(gameData);
             result += "\n\n";
             result += BoardRenderer.renderBoardMoves(gameData.game(), activeGameTracker.getUserTeam(), piecePosition);
             return new EvalResult(result, MY_STATE);
@@ -152,31 +152,5 @@ public class GameplayClient {
             """;
             return new EvalResult(result, MY_STATE);
         }
-    }
-
-    private GameData getGameData(int activeGameID) throws ResponseException {
-        GameListResponse gameListResponse = serverFacade.listGames(serverFacade.getAuthData().authToken());
-        GameData gameData = gameListResponse.findGameData(activeGameID);
-        if (gameData == null) {
-            throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "No game with the provided gameID could be located.");
-        }
-        return gameData;
-    }
-
-    private String formatGameData(GameData gameData) {
-        String uiGameData = "";
-        uiGameData += gameData.gameName();
-        uiGameData += ": White Team - ";
-        uiGameData += representPlayerName(gameData.whiteUsername());
-        uiGameData += " | Black Team - ";
-        uiGameData += representPlayerName(gameData.blackUsername());
-        return uiGameData;
-    }
-
-    private String representPlayerName(String playerName) {
-        if (playerName == null) {
-            return "_____";
-        }
-        return playerName;
     }
 }

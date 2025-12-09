@@ -143,31 +143,34 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
         try {
             ArrayList<GameData> gameDataArrayList = dataAccess.listGames();
             // Find which game this root user is in
+            GameData foundGameData = null;
             for (GameData gameData : gameDataArrayList) {
                 if (gameData.gameID() == activeGameID) {
-                    // When root client sends CONNECT, server sends LOAD_GAME back to that root client
-                    ServerCommandSender.sendLoadGame(rootUserSession, gameData);
-
-                    ArrayList<String> allGameSessionIDs = gameSessions.get(gameData.gameID());
-                    String connectNotification = String.format("User %s has joined the game as ", rootUsername);
-                    connectNotification += switch (findUserRole(rootUsername, gameData)) {
-                        case WHITE -> "the White Player.";
-                        case BLACK -> "the Black Player.";
-                        case OBSERVER -> "an observer.";
-                    };
-                    for (String sessionID : allGameSessionIDs) {
-                        if (!sessionID.equals(rootSessionID)) {
-                            // Also send a NOTIFICATION ServerMessage to all other participants in this game
-                            ServerCommandSender.sendNotification(wsSessions.get(sessionID), connectNotification);
-                        }
-                    }
-                    return;
+                    foundGameData = gameData;
                 }
             }
-            throw new DatabaseException("The game the user has requested to connect to could not be located");
+            if (foundGameData != null) {
+                // When root client sends CONNECT, server sends LOAD_GAME back to that root client
+                ServerCommandSender.sendLoadGame(rootUserSession, foundGameData);
+
+                ArrayList<String> allGameSessionIDs = gameSessions.get(foundGameData.gameID());
+                String connectNotification = String.format("User %s has joined the game as ", rootUsername);
+                connectNotification += switch (findUserRole(rootUsername, foundGameData)) {
+                    case WHITE -> "the White Player.";
+                    case BLACK -> "the Black Player.";
+                    case OBSERVER -> "an observer.";
+                };
+                for (String sessionID : allGameSessionIDs) {
+                    if (!sessionID.equals(rootSessionID)) {
+                        // Also send a NOTIFICATION ServerMessage to all other participants in this game
+                        ServerCommandSender.sendNotification(wsSessions.get(sessionID), connectNotification);
+                    }
+                }
+            } else {
+                throw new DatabaseException("The game the user has requested to connect to could not be located");
+            }
         } catch (DatabaseException e) {
             ServerCommandSender.sendError(rootUserSession, "There was an error connecting you to your game.");
-            return;
         }
     }
 
@@ -220,50 +223,51 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
 
             ArrayList<GameData> gameDataArrayList = dataAccess.listGames();
             // Find which game this root user is in
+            GameData foundGameData = null;
             for (GameData gameData : gameDataArrayList) {
                 if (gameData.gameID() == activeGameID) {
-                    // When root client sends makes a move, server sends LOAD_GAME to all clients
-                    ArrayList<String> allGameSessionIDs = gameSessions.get(activeGameID);
-                    for (String sessionID : allGameSessionIDs) {
-                        ServerCommandSender.sendLoadGame(wsSessions.get(sessionID), gameData);
-                    }
-
-                    ChessGame chessGame = gameData.game();
-                    // Note that by now, the move has already been made, so the moving piece is found at the end position
-                    ChessPiece movingPiece = chessGame.getBoard().getPiece(move.getEndPosition());
-                    String moveNotification = String.format(
-                            "User %s has moved their %s from %s to %s.",
-                            rootUsername, movingPiece, move.getStartPosition(), move.getEndPosition()
-                                                              );
-                    for (String sessionID : allGameSessionIDs) {
-                        if (!sessionID.equals(rootSessionID)) {
-                            // Also send a NOTIFICATION ServerMessage to all other participants in this game
-                            ServerCommandSender.sendNotification(wsSessions.get(sessionID), moveNotification);
-                        }
-                    }
-
-                    // Check if the move has resulted in a stalemate, checkmate or check for the enemy team
-                    ChessGame.TeamColor enemyColor = chessGame.getTeamTurn();
-                    String gameConditionNotification = null;
-                    if (chessGame.isInStalemate(enemyColor)) {
-                        gameConditionNotification = "This move has put the game into a stalemate";
-                        dataAccess.endGame(activeGameID);
-                    } else if (chessGame.isInCheckmate(enemyColor)) {
-                        gameConditionNotification = String.format("This move has put the %s player into Checkmate!", enemyColor);
-                        dataAccess.endGame(activeGameID);
-                    } else if (chessGame.isInCheck(enemyColor)) {
-                        gameConditionNotification = String.format("This move has put the %s player into Check!", enemyColor);
-                    }
-                    // If so, send a NOTIFICATION ServerMessage to all participants in this game
-                    if (gameConditionNotification != null) {
-                        for (String sessionID : allGameSessionIDs) {
-                            ServerCommandSender.sendNotification(wsSessions.get(sessionID), gameConditionNotification);
-                        }
-                    }
-                    return;
+                    foundGameData = gameData;
                 }
             }
-            throw new DatabaseException("The game where the move was made could not be located");
+            if (foundGameData != null) {
+                // When root client sends makes a move, server sends LOAD_GAME to all clients
+                ArrayList<String> allGameSessionIDs = gameSessions.get(activeGameID);
+                for (String sessionID : allGameSessionIDs) {
+                    ServerCommandSender.sendLoadGame(wsSessions.get(sessionID), foundGameData);
+                }
+
+                ChessGame chessGame = foundGameData.game();
+                // Note that by now, the move has already been made, so the moving piece is found at the end position
+                ChessPiece movingPiece = chessGame.getBoard().getPiece(move.getEndPosition());
+                String moveNotification = String.format("User %s has moved their %s from %s to %s.", rootUsername, movingPiece, move.getStartPosition(), move.getEndPosition());
+                for (String sessionID : allGameSessionIDs) {
+                    if (!sessionID.equals(rootSessionID)) {
+                        // Also send a NOTIFICATION ServerMessage to all other participants in this game
+                        ServerCommandSender.sendNotification(wsSessions.get(sessionID), moveNotification);
+                    }
+                }
+
+                // Check if the move has resulted in a stalemate, checkmate or check for the enemy team
+                ChessGame.TeamColor enemyColor = chessGame.getTeamTurn();
+                String gameConditionNotification = null;
+                if (chessGame.isInStalemate(enemyColor)) {
+                    gameConditionNotification = "This move has put the game into a stalemate";
+                    dataAccess.endGame(activeGameID);
+                } else if (chessGame.isInCheckmate(enemyColor)) {
+                    gameConditionNotification = String.format("This move has put the %s player into Checkmate!", enemyColor);
+                    dataAccess.endGame(activeGameID);
+                } else if (chessGame.isInCheck(enemyColor)) {
+                    gameConditionNotification = String.format("This move has put the %s player into Check!", enemyColor);
+                }
+                // If so, send a NOTIFICATION ServerMessage to all participants in this game
+                if (gameConditionNotification != null) {
+                    for (String sessionID : allGameSessionIDs) {
+                        ServerCommandSender.sendNotification(wsSessions.get(sessionID), gameConditionNotification);
+                    }
+                }
+            } else {
+                throw new DatabaseException("The game where the move was made could not be located");
+            }
         } catch (DatabaseException e) {
             ServerCommandSender.sendError(rootUserSession, "There was an error processing your move.");
             return;
@@ -280,37 +284,40 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
         try {
             ArrayList<GameData> gameDataArrayList = dataAccess.listGames();
             // Find which game this root user is in
+            GameData foundGameData = null;
             for (GameData gameData : gameDataArrayList) {
                 if (gameData.gameID() == activeGameID) {
-                    ArrayList<String> allGameSessionIDs = gameSessions.get(gameData.gameID());
-                    String leaveNotification = String.format("User %s, ", rootUsername);
-                    UserRole userRole = findUserRole(rootUsername, gameData);
-                    if (userRole == UserRole.WHITE) {
-                        dataAccess.removeUser(activeGameID, rootUsername, ChessGame.TeamColor.WHITE);
-                        leaveNotification += "the White Player, ";
-                    } else if (userRole == UserRole.BLACK) {
-                        dataAccess.removeUser(activeGameID, rootUsername, ChessGame.TeamColor.BLACK);
-                        leaveNotification += "the Black Player, ";
-                    } else {
-                        leaveNotification += "an observer, ";
-                    }
-                    leaveNotification += "has left the game.";
-
-                    rootUserSession.closeSession();
-
-                    // When root client player sends LEAVE, server sends NOTIFICATION to all other clients
-                    for (String sessionID : allGameSessionIDs) {
-                        if (!sessionID.equals(rootSessionID)) {
-                            ServerCommandSender.sendNotification(wsSessions.get(sessionID), leaveNotification);
-                        }
-                    }
-                    return;
+                    foundGameData = gameData;
                 }
             }
-            throw new DatabaseException("The game the user has requested to resign from could not be located");
+            if (foundGameData != null) {
+                ArrayList<String> allGameSessionIDs = gameSessions.get(foundGameData.gameID());
+                String leaveNotification = String.format("User %s, ", rootUsername);
+                UserRole userRole = findUserRole(rootUsername, foundGameData);
+                if (userRole == UserRole.WHITE) {
+                    dataAccess.removeUser(activeGameID, rootUsername, ChessGame.TeamColor.WHITE);
+                    leaveNotification += "the White Player, ";
+                } else if (userRole == UserRole.BLACK) {
+                    dataAccess.removeUser(activeGameID, rootUsername, ChessGame.TeamColor.BLACK);
+                    leaveNotification += "the Black Player, ";
+                } else {
+                    leaveNotification += "an observer, ";
+                }
+                leaveNotification += "has left the game.";
+
+                rootUserSession.closeSession();
+
+                // When root client player sends LEAVE, server sends NOTIFICATION to all other clients
+                for (String sessionID : allGameSessionIDs) {
+                    if (!sessionID.equals(rootSessionID)) {
+                        ServerCommandSender.sendNotification(wsSessions.get(sessionID), leaveNotification);
+                    }
+                }
+            } else {
+                throw new DatabaseException("The game the user has requested to resign from could not be located");
+            }
         } catch (DatabaseException e) {
             ServerCommandSender.sendError(rootUserSession, "There was an error resigning from your game.");
-            return;
         }
     }
 
@@ -324,31 +331,35 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
         try {
             ArrayList<GameData> gameDataArrayList = dataAccess.listGames();
             // Find which game this root user is in
+            GameData foundGameData = null;
             for (GameData gameData : gameDataArrayList) {
                 if (gameData.gameID() == activeGameID) {
-                    ArrayList<String> allGameSessionIDs = gameSessions.get(gameData.gameID());
-                    String resignNotification = String.format("User %s, ", rootUsername);
-                    resignNotification += switch (findUserRole(rootUsername, gameData)) {
-                        case WHITE -> "the White Player, ";
-                        case BLACK -> "the Black Player, ";
-                        case OBSERVER -> throw new DatabaseException("Only players may resign from a game, not observers.");
-                    };
-                    resignNotification += "has resigned from the game.";
-
-                    if (gameData.gameActive()) {
-                        dataAccess.endGame(activeGameID);
-                    } else {
-                        throw new DatabaseException("A player cannot resign from a game that has already ended.");
-                    }
-
-                    // When root client sends RESIGN, server sends NOTIFICATION to all clients
-                    for (String sessionID : allGameSessionIDs) {
-                        ServerCommandSender.sendNotification(wsSessions.get(sessionID), resignNotification);
-                    }
-                    return;
+                    foundGameData = gameData;
                 }
             }
-            throw new DatabaseException("The game the user has requested to resign from could not be located");
+            if (foundGameData != null) {
+                ArrayList<String> allGameSessionIDs = gameSessions.get(foundGameData.gameID());
+                String resignNotification = String.format("User %s, ", rootUsername);
+                resignNotification += switch (findUserRole(rootUsername, foundGameData)) {
+                    case WHITE -> "the White Player, ";
+                    case BLACK -> "the Black Player, ";
+                    case OBSERVER -> throw new DatabaseException("Only players may resign from a game, not observers.");
+                };
+                resignNotification += "has resigned from the game.";
+
+                if (foundGameData.gameActive()) {
+                    dataAccess.endGame(activeGameID);
+                } else {
+                    throw new DatabaseException("A player cannot resign from a game that has already ended.");
+                }
+
+                // When root client sends RESIGN, server sends NOTIFICATION to all clients
+                for (String sessionID : allGameSessionIDs) {
+                    ServerCommandSender.sendNotification(wsSessions.get(sessionID), resignNotification);
+                }
+            } else {
+                throw new DatabaseException("The game the user has requested to resign from could not be located");
+            }
         } catch (DatabaseException e) {
             ServerCommandSender.sendError(rootUserSession, "There was an error resigning from your game.");
             return;

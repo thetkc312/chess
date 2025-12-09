@@ -239,19 +239,8 @@ public class DataAccessMySql implements DataAccess {
     @Override
     public void joinGame(int gameID, String username, ChessGame.TeamColor teamColor) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
-            String gameFindStatement =
-                    """
-                    SELECT game FROM game_data WHERE gameID = ?
-                    """;
-            GameData gameData;
-            try (PreparedStatement preparedStatement = connection.prepareStatement(gameFindStatement)) {
-                preparedStatement.setInt(1, gameID);
-                try (ResultSet rs = preparedStatement.executeQuery()) {
-                    rs.next();
-                    String gameJson = rs.getString("game");
-                    gameData = new Gson().fromJson(gameJson, GameData.class);
-                }
-            }
+
+            GameData gameData = findGameData(gameID, connection);
 
             String colorUser;
             GameData updatedGameData;
@@ -308,19 +297,8 @@ public class DataAccessMySql implements DataAccess {
     @Override
     public void executeChessMove(int gameID, ChessMove chessMove) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
-            String gameFindStatement =
-                    """
-                    SELECT game FROM game_data WHERE gameID = ?
-                    """;
-            GameData gameData;
-            try (PreparedStatement preparedStatement = connection.prepareStatement(gameFindStatement)) {
-                preparedStatement.setInt(1, gameID);
-                try (ResultSet rs = preparedStatement.executeQuery()) {
-                    rs.next();
-                    String gameJson = rs.getString("game");
-                    gameData = new Gson().fromJson(gameJson, GameData.class);
-                }
-            }
+
+            GameData gameData = findGameData(gameID, connection);
 
             try {
                 gameData.game().makeMove(chessMove);
@@ -345,19 +323,8 @@ public class DataAccessMySql implements DataAccess {
     @Override
     public void endGame(int gameID) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
-            String gameFindStatement =
-                    """
-                    SELECT game FROM game_data WHERE gameID = ?
-                    """;
-            GameData oldGame;
-            try (PreparedStatement preparedStatement = connection.prepareStatement(gameFindStatement)) {
-                preparedStatement.setInt(1, gameID);
-                try (ResultSet rs = preparedStatement.executeQuery()) {
-                    rs.next();
-                    String gameJson = rs.getString("game");
-                    oldGame = new Gson().fromJson(gameJson, GameData.class);
-                }
-            }
+
+            GameData oldGame = findGameData(gameID, connection);
 
             GameData updatedGameData = new GameData(oldGame.gameID(), oldGame.whiteUsername(), oldGame.blackUsername(), oldGame.gameName(), oldGame.game(), false);
 
@@ -379,19 +346,8 @@ public class DataAccessMySql implements DataAccess {
     @Override
     public void removeUser(int gameID, String username, ChessGame.TeamColor teamColor) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
-            String gameFindStatement =
-                    """
-                    SELECT game FROM game_data WHERE gameID = ?
-                    """;
-            GameData gameData;
-            try (PreparedStatement preparedStatement = connection.prepareStatement(gameFindStatement)) {
-                preparedStatement.setInt(1, gameID);
-                try (ResultSet rs = preparedStatement.executeQuery()) {
-                    rs.next();
-                    String gameJson = rs.getString("game");
-                    gameData = new Gson().fromJson(gameJson, GameData.class);
-                }
-            }
+
+            GameData gameData = findGameData(gameID, connection);
 
             String userColor;
             GameData updatedGameData;
@@ -439,6 +395,23 @@ public class DataAccessMySql implements DataAccess {
         } catch (SQLException ex) {
             throw new DatabaseException(String.format("Unable to list games in dataaccess: %s", ex.getMessage()));
         }
+    }
+
+    private GameData findGameData(int gameID, Connection connection) throws SQLException {
+        String gameFindStatement =
+                """
+                SELECT game FROM game_data WHERE gameID = ?
+                """;
+        GameData gameData;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(gameFindStatement)) {
+            preparedStatement.setInt(1, gameID);
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                rs.next();
+                String gameJson = rs.getString("game");
+                gameData = new Gson().fromJson(gameJson, GameData.class);
+            }
+        }
+        return gameData;
     }
 
     private void initializeDatabase() throws DatabaseException {
