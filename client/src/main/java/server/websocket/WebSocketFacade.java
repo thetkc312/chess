@@ -43,23 +43,23 @@ public class WebSocketFacade extends Endpoint {
     }
 
     public void connectGame() throws IOException {
-        UserGameCommand connectCommand = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authData.authToken(), activeGameTracker.getGameID());
-        session.getBasicRemote().sendText(SERIALIZER.toJson(connectCommand));
+        UserGameCommand connect = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authData.authToken(), activeGameTracker.getGameID());
+        session.getBasicRemote().sendText(SERIALIZER.toJson(connect));
     }
 
     public void leaveGame() throws IOException {
-        UserGameCommand leaveCommand = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authData.authToken(), activeGameTracker.getGameID());
-        session.getBasicRemote().sendText(SERIALIZER.toJson(leaveCommand));
+        UserGameCommand leave = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authData.authToken(), activeGameTracker.getGameID());
+        session.getBasicRemote().sendText(SERIALIZER.toJson(leave));
 
     }
 
-    public void moveInGame(ChessMove move) throws IOException {
-        UserMoveCommand moveCommand = new UserMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authData.authToken(), activeGameTracker.getGameID(), move);
-        session.getBasicRemote().sendText(SERIALIZER.toJson(moveCommand));
+    public void moveInGame(ChessMove mv) throws IOException {
+        UserMoveCommand move = new UserMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authData.authToken(), activeGameTracker.getGameID(), mv);
+        session.getBasicRemote().sendText(SERIALIZER.toJson(move));
     }
 
     public void forfeitGame() throws IOException {
-        UserGameCommand forfeitCommand = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authData.authToken(), activeGameTracker.getGameID());
-        session.getBasicRemote().sendText(SERIALIZER.toJson(forfeitCommand));
+        UserGameCommand forfeit = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authData.authToken(), activeGameTracker.getGameID());
+        session.getBasicRemote().sendText(SERIALIZER.toJson(forfeit));
     }
 }

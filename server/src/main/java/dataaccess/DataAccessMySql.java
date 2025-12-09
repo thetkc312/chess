@@ -324,9 +324,9 @@ public class DataAccessMySql implements DataAccess {
     public void endGame(int gameID) throws DatabaseException {
         try (Connection connection = DatabaseManager.getConnection()) {
 
-            GameData oldGame = findGameData(gameID, connection);
+            GameData game = findGameData(gameID, connection);
 
-            GameData updatedGameData = new GameData(oldGame.gameID(), oldGame.whiteUsername(), oldGame.blackUsername(), oldGame.gameName(), oldGame.game(), false);
+            GameData updatedGameData = new GameData(game.gameID(), game.whiteUsername(), game.blackUsername(), game.gameName(), game.game(), false);
 
 
             String gameUpdateStatement =

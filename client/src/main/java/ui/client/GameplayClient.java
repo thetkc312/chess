@@ -50,7 +50,8 @@ public class GameplayClient {
             startWebSocket();
         }
         if (activeGameTracker.getUserRole() == null) {
-            throw new ConnectException("In order to start the Gameplay Client, the activeGameTracker must be updated to reflect the role of the player in their game.");
+            throw new ConnectException(
+                    "In order to start the Gameplay Client, the activeGameTracker must be updated to reflect the role of the player in their game.");
         }
         try {
             return switch (cmd) {

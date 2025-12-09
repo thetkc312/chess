@@ -337,7 +337,8 @@ public class DataAccessTest {
     @Test
     void listGamesValid() throws DatabaseException {
         assertEquals(0, dataAccess.listGames().size());
-        GameData newGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), userBob.username(), gameData.gameName(), gameData.game(), true);
+        GameData newGameData = new GameData(
+                gameData.gameID(), gameData.whiteUsername(), userBob.username(), gameData.gameName(), gameData.game(), true);
 
         try (Connection connection = DatabaseManager.getConnection()) {
             String gameAddStatement =

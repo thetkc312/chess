@@ -124,13 +124,15 @@ public class DataAccessMemory implements DataAccess {
             if (username.equals(blackUsername)) {
                 blackUsername = null;
             } else {
-                throw new DatabaseException(String.format("Failed removing %s from game #%d: Does not match Black username %s", username, gameID, blackUsername));
+                throw new DatabaseException(String.format(
+                        "Failed removing %s from game #%d: Does not match Black username %s", username, gameID, blackUsername));
             }
         } else {
             if (username.equals(whiteUsername)) {
                 whiteUsername = null;
             } else {
-                throw new DatabaseException(String.format("Failed removing %s from game #%d: Does not match Black username %s", username, gameID, blackUsername));
+                throw new DatabaseException(String.format(
+                        "Failed removing %s from game #%d: Does not match Black username %s", username, gameID, blackUsername));
             }
         }
 

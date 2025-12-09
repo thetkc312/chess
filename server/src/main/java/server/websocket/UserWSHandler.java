@@ -116,7 +116,9 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
         WsContext rootUserSession = wsSessions.get(rootSessionID);
         // If this sessionID is already stored, then the client is redundantly trying to connect a second time
         if (sessionUsernames.contains(rootSessionID)) {
-            ServerCommandSender.sendError(rootUserSession, "An error was caused as a CONNECT request was made to the server while this session is already connected.");
+            ServerCommandSender.sendError(rootUserSession,
+                                          "An error was caused as a CONNECT request was made " +
+                                                  "to the server while this session is already connected.");
             return;
         }
         // else, get the username corresponding to this user's authToken. It should only fail if the server has connection issues.
@@ -124,7 +126,9 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
         try {
             rootUsername = getUsername(userGameCommand.getAuthToken());
         } catch (DatabaseException e) {
-            ServerCommandSender.sendError(rootUserSession, "There was an error while extracting the username corresponding to this authentication token");
+            ServerCommandSender.sendError(rootUserSession,
+                                          "There was an error while extracting the username " +
+                                                  "corresponding to this authentication token");
             return;
         }
         sessionUsernames.put(rootSessionID, rootUsername);
@@ -133,7 +137,8 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
         int activeGameID = userGameCommand.getGameID();
         if (gameSessions.containsKey(activeGameID)) {
             gameSessions.get(activeGameID).add(rootSessionID);
-        // If the game the client is connecting to has not been documented, add it to the set by its activeGameID with this user as the only element of its String Array value
+        // If the game the client is connecting to has not been documented, add it to the set
+        // by its activeGameID with this user as the only element of its String Array value
         } else {
             ArrayList<String> newGameSessionIDArrayList = new ArrayList<>();
             newGameSessionIDArrayList.add(rootSessionID);
@@ -199,19 +204,16 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
             for (GameData gameData : gameDataArrayList) {
                 if (gameData.gameID() == activeGameID) {
                     if (!gameData.gameActive()) {
-                        throw new InvalidMoveException("There has been an error as you attempted to make a move in a chess game that is not active.");
+                        throw new InvalidMoveException(
+                                "There has been an error as you attempted to make a move in a chess game that is not active.");
                     }
                     UserRole movingPieceTeam = findUserRole(rootUsername, gameData);
                     ChessGame.TeamColor gameActiveTeam = gameData.game().getTeamTurn();
                     ChessGame.TeamColor opponentTeam;
-                    if (movingPieceTeam == UserRole.WHITE) {
-                        if (gameData.blackUsername() != null) {
-                            opponentUsername = gameData.blackUsername();
-                        }
-                    } else {
-                        if (gameData.whiteUsername() != null) {
-                            opponentUsername = gameData.whiteUsername();
-                        }
+                    if (movingPieceTeam == UserRole.WHITE && gameData.blackUsername() != null) {
+                        opponentUsername = gameData.blackUsername();
+                    } else if (movingPieceTeam == UserRole.BLACK && gameData.whiteUsername() != null) {
+                        opponentUsername = gameData.whiteUsername();
                     }
                     if ((movingPieceTeam == UserRole.WHITE && gameActiveTeam == ChessGame.TeamColor.WHITE)
                             || (movingPieceTeam == UserRole.BLACK && gameActiveTeam == ChessGame.TeamColor.BLACK)) {
@@ -234,12 +236,7 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
 
             ArrayList<GameData> gameDataArrayList = dataAccess.listGames();
             // Find which game this root user is in
-            GameData foundGameData = null;
-            for (GameData gameData : gameDataArrayList) {
-                if (gameData.gameID() == activeGameID) {
-                    foundGameData = gameData;
-                }
-            }
+            GameData foundGameData = findGameData(gameDataArrayList, activeGameID);
             if (foundGameData != null) {
                 // When root client sends makes a move, server sends LOAD_GAME to all clients
                 ArrayList<String> allGameSessionIDs = gameSessions.get(activeGameID);
@@ -250,7 +247,8 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
                 ChessGame chessGame = foundGameData.game();
                 // Note that by now, the move has already been made, so the moving piece is found at the end position
                 ChessPiece movingPiece = chessGame.getBoard().getPiece(move.getEndPosition());
-                String moveNotification = String.format("User %s has moved their %s from %s to %s.", rootUsername, movingPiece, move.getStartPosition(), move.getEndPosition());
+                String moveNotification = String.format("User %s has moved their %s from %s to %s.",
+                                                        rootUsername, movingPiece, move.getStartPosition(), move.getEndPosition());
                 for (String sessionID : allGameSessionIDs) {
                     if (!sessionID.equals(rootSessionID)) {
                         // Also send a NOTIFICATION ServerMessage to all other participants in this game
@@ -262,13 +260,16 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
                 ChessGame.TeamColor enemyColor = chessGame.getTeamTurn();
                 String gameConditionNotification = null;
                 if (chessGame.isInStalemate(enemyColor)) {
-                    gameConditionNotification = "This move has put the game into a stalemate between %s and %s".formatted(rootUsername, opponentUsername);
+                    gameConditionNotification = String.format("This move has put the game into a stalemate between %s and %s",
+                                                              rootUsername, opponentUsername);
                     dataAccess.endGame(activeGameID);
                 } else if (chessGame.isInCheckmate(enemyColor)) {
-                    gameConditionNotification = String.format("This move by %s has put the %s player, %s, into Checkmate!", rootUsername, enemyColor, opponentUsername);
+                    gameConditionNotification = String.format("This move by %s has put the %s player, %s, into Checkmate!",
+                                                              rootUsername, enemyColor, opponentUsername);
                     dataAccess.endGame(activeGameID);
                 } else if (chessGame.isInCheck(enemyColor)) {
-                    gameConditionNotification = String.format("This move by %s has put the %s player, %s, into Check!", rootUsername, enemyColor, opponentUsername);
+                    gameConditionNotification = String.format("This move by %s has put the %s player, %s, into Check!",
+                                                              rootUsername, enemyColor, opponentUsername);
                 }
                 // If so, send a NOTIFICATION ServerMessage to all participants in this game
                 if (gameConditionNotification != null) {
@@ -295,12 +296,7 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
         try {
             ArrayList<GameData> gameDataArrayList = dataAccess.listGames();
             // Find which game this root user is in
-            GameData foundGameData = null;
-            for (GameData gameData : gameDataArrayList) {
-                if (gameData.gameID() == activeGameID) {
-                    foundGameData = gameData;
-                }
-            }
+            GameData foundGameData = findGameData(gameDataArrayList, activeGameID);
             if (foundGameData != null) {
                 ArrayList<String> allGameSessionIDs = gameSessions.get(foundGameData.gameID());
                 String leaveNotification = String.format("User %s, ", rootUsername);
@@ -375,5 +371,15 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
             ServerCommandSender.sendError(rootUserSession, "There was an error resigning from your game.");
             return;
         }
+    }
+
+    private GameData findGameData(ArrayList<GameData> gameDataArrayList, int activeGameID) {
+        GameData foundGameData = null;
+        for (GameData gameData : gameDataArrayList) {
+            if (gameData.gameID() == activeGameID) {
+                foundGameData = gameData;
+            }
+        }
+        return foundGameData;
     }
 }
