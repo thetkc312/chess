@@ -1,8 +1,8 @@
 package ui.client;
 
 import chess.ChessMove;
+import chess.ChessPiece;
 import chess.ChessPosition;
-import endpointresponses.GameListResponse;
 import model.GameData;
 import server.ResponseException;
 import server.ServerFacade;
@@ -25,11 +25,13 @@ public class GameplayClient {
     private final ServerMessageObserver serverMessageObserver;
 
     private WebSocketFacade webSocketFacade = null;
+    private boolean attemptingResign;
 
     public GameplayClient(ServerFacade serverFacade, ActiveGameTracker activeGameTracker) {
         this.serverFacade = serverFacade;
         this.activeGameTracker = activeGameTracker;
         this.serverMessageObserver = new ServerMessageObserver(activeGameTracker);
+        attemptingResign = false;
     }
 
     public void startWebSocket() throws ConnectException {
@@ -67,6 +69,7 @@ public class GameplayClient {
     }
 
     private EvalResult help() {
+        attemptingResign = false;
         String result = """
         Here are the actions available to you while in a game (write piece positions as <FILE><RANK>):
         \thelp - see the possible commands
@@ -81,6 +84,7 @@ public class GameplayClient {
     }
 
     private EvalResult redraw() {
+        attemptingResign = false;
         GameData gameData = GameGetter.getGameData(activeGameTracker.getGameID(), serverFacade);
         String result = "Redrawing game: \n\t";
         result += GameGetter.formatGameData(gameData);
@@ -90,22 +94,32 @@ public class GameplayClient {
     }
 
     private EvalResult leave() throws IOException {
+        attemptingResign = false;
+
         webSocketFacade.leaveGame();
         webSocketFacade = null;
         serverMessageObserver.stop();
+        activeGameTracker.setUserRole(null);
         return new EvalResult("", ClientStates.POSTLOGIN);
     }
 
     private EvalResult move(String[] params) throws IOException {
+        attemptingResign = false;
         try {
-            if (params.length != 2) {
+            if (params.length != 2 & params.length != 3) {
                 throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
             }
 
             ChessPosition startPosition = ChessPosition.positionFromFileRank(params[0]);
             ChessPosition endPosition = ChessPosition.positionFromFileRank(params[1]);
-            // TODO: Implement piece promoting
-            ChessMove move = new ChessMove(startPosition, endPosition, null);
+            ChessPiece.PieceType promotionType = null;
+            if (params.length == 3) {
+                ChessPiece promotionPiece = ChessPiece.fromLetter(params[2].charAt(0));
+                if (promotionPiece != null) {
+                    promotionType = promotionPiece.getPieceType();
+                }
+            }
+            ChessMove move = new ChessMove(startPosition, endPosition, promotionType);
 
             webSocketFacade.moveInGame(move);
             return new EvalResult("", MY_STATE);
@@ -123,8 +137,14 @@ public class GameplayClient {
     }
 
     private EvalResult resign() throws IOException {
-        webSocketFacade.forfeitGame();
-        return new EvalResult("", MY_STATE);
+        if (!attemptingResign) {
+            attemptingResign = true;
+            return new EvalResult("Please type 'resign' again to confirm if you would like to resign:\n", MY_STATE);
+        } else {
+            attemptingResign = false;
+            webSocketFacade.forfeitGame();
+            return new EvalResult("", MY_STATE);
+        }
     }
 
     private EvalResult show(String[] params) {

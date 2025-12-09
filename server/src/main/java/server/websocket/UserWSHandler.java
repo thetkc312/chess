@@ -190,6 +190,7 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
         System.out.println("Processing MAKE_MOVE message...");
         WsContext rootUserSession = wsSessions.get(rootSessionID);
         String rootUsername = sessionUsernames.get(rootSessionID);
+        String opponentUsername = "_____";
         int activeGameID = userGameCommand.getGameID();
         // Check if the game is already over or the user is moving out of turn
         try {
@@ -200,14 +201,24 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
                     if (!gameData.gameActive()) {
                         throw new InvalidMoveException("There has been an error as you attempted to make a move in a chess game that is not active.");
                     }
-                }
-                UserRole movingPieceTeam = findUserRole(rootUsername, gameData);
-                ChessGame.TeamColor gameActiveTeam = gameData.game().getTeamTurn();
-                if ((movingPieceTeam == UserRole.WHITE && gameActiveTeam == ChessGame.TeamColor.WHITE)
-                        || (movingPieceTeam == UserRole.BLACK && gameActiveTeam == ChessGame.TeamColor.BLACK)) {
-                    break;
-                } else {
-                    throw new InvalidMoveException("There has been an error as you attempted to make a move out of turn.");
+                    UserRole movingPieceTeam = findUserRole(rootUsername, gameData);
+                    ChessGame.TeamColor gameActiveTeam = gameData.game().getTeamTurn();
+                    ChessGame.TeamColor opponentTeam;
+                    if (movingPieceTeam == UserRole.WHITE) {
+                        if (gameData.blackUsername() != null) {
+                            opponentUsername = gameData.blackUsername();
+                        }
+                    } else {
+                        if (gameData.whiteUsername() != null) {
+                            opponentUsername = gameData.whiteUsername();
+                        }
+                    }
+                    if ((movingPieceTeam == UserRole.WHITE && gameActiveTeam == ChessGame.TeamColor.WHITE)
+                            || (movingPieceTeam == UserRole.BLACK && gameActiveTeam == ChessGame.TeamColor.BLACK)) {
+                        break;
+                    } else {
+                        throw new InvalidMoveException("There has been an error as you attempted to make a move out of turn.");
+                    }
                 }
             }
         } catch (InvalidMoveException e) {
@@ -251,13 +262,13 @@ public class UserWSHandler implements WsConnectHandler, WsMessageHandler, WsClos
                 ChessGame.TeamColor enemyColor = chessGame.getTeamTurn();
                 String gameConditionNotification = null;
                 if (chessGame.isInStalemate(enemyColor)) {
-                    gameConditionNotification = "This move has put the game into a stalemate";
+                    gameConditionNotification = "This move has put the game into a stalemate between %s and %s".formatted(rootUsername, opponentUsername);
                     dataAccess.endGame(activeGameID);
                 } else if (chessGame.isInCheckmate(enemyColor)) {
-                    gameConditionNotification = String.format("This move has put the %s player into Checkmate!", enemyColor);
+                    gameConditionNotification = String.format("This move by %s has put the %s player, %s, into Checkmate!", rootUsername, enemyColor, opponentUsername);
                     dataAccess.endGame(activeGameID);
                 } else if (chessGame.isInCheck(enemyColor)) {
-                    gameConditionNotification = String.format("This move has put the %s player into Check!", enemyColor);
+                    gameConditionNotification = String.format("This move by %s has put the %s player, %s, into Check!", rootUsername, enemyColor, opponentUsername);
                 }
                 // If so, send a NOTIFICATION ServerMessage to all participants in this game
                 if (gameConditionNotification != null) {
