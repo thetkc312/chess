@@ -5,6 +5,7 @@ import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -41,24 +42,38 @@ public class BoardRenderer {
     public static String renderBoard(ChessGame game, ChessGame.TeamColor teamColor) {
         String processedBoard = rawBoard(game);
         processedBoard = wrapBoard(processedBoard);
+
+        String boardSquareFormat = BOARD_SQUARE_FORMAT;
         if (teamColor == ChessGame.TeamColor.BLACK) {
             processedBoard = rotateBoard(processedBoard);
+            boardSquareFormat = rotateBoard(boardSquareFormat);
         }
         processedBoard = padBoard(processedBoard);
-        processedBoard = formatUnicode(processedBoard, null);
+        processedBoard = formatUnicode(processedBoard, boardSquareFormat);
         return processedBoard;
     }
 
-    public static String renderBoardMoves(ChessGame game, ChessGame.TeamColor teamColor, ChessPosition chessPosition) {
+    public static String renderBoardMoves(ChessGame game, ChessGame.TeamColor teamColor, ChessPosition startPosition) {
         String processedBoard = rawBoard(game);
         processedBoard = wrapBoard(processedBoard);
-        // TODO: Evaluate moveOptions
+
+        Collection<ChessMove> validMoves = game.validMoves(startPosition);
+        ArrayList<ChessPosition> endPositions = new ArrayList<>();
+        if (validMoves != null) {
+            for (ChessMove chessMove : validMoves) {
+                endPositions.add(chessMove.getEndPosition());
+            }
+        }
+
+        String boardSquareFormat = BOARD_SQUARE_FORMAT;
+        boardSquareFormat = markMoves(boardSquareFormat, startPosition, endPositions);
         if (teamColor == ChessGame.TeamColor.BLACK) {
             processedBoard = rotateBoard(processedBoard);
-            // TODO: Add rotation filtering for moveOptions
+            boardSquareFormat = rotateBoard(boardSquareFormat);
         }
         // TODO: Implement special coloration for moveOptions
         processedBoard = padBoard(processedBoard);
+        processedBoard = formatUnicode(processedBoard, boardSquareFormat);
         return processedBoard;
 
     }
@@ -79,6 +94,29 @@ public class BoardRenderer {
             }
         }
         return fullBoard.toString();
+    }
+
+    private static String markMoves(String boardSquareFormat, ChessPosition startPosition, ArrayList<ChessPosition> endPositions) {
+        StringBuilder updatedBoardSquareFormat = new StringBuilder();
+
+        String[] boardFormatLines = boardSquareFormat.split("\\R");
+        // Iterate over each row, tracking row position
+        for (int rowPos = boardFormatLines.length; rowPos >= 1; rowPos--) {
+            String boardLine = boardFormatLines[rowPos-1];
+            // Iterate through the columns of text
+            for (int colPos = 1; colPos <= boardLine.length(); colPos++) {
+                // Track the column position based on the board square width
+                if (startPosition.equals(new ChessPosition(rowPos-1, colPos-1))) {
+                    updatedBoardSquareFormat.append('o');
+                } else if (endPositions.contains(new ChessPosition(rowPos-1, colPos-1))) {
+                    updatedBoardSquareFormat.append(Character.toUpperCase(boardLine.charAt(colPos-1)));
+                } else {
+                    updatedBoardSquareFormat.append(boardLine.charAt(colPos-1));
+                }
+            }
+            updatedBoardSquareFormat.append('\n');
+        }
+        return updatedBoardSquareFormat.toString();
     }
 
     private static String rotateBoard(String board) {
@@ -117,11 +155,11 @@ public class BoardRenderer {
         return paddedBoard.toString();
     }
 
-    private static String formatUnicode(String rawBoard, Collection<ChessMove> moveOptions) {
+    private static String formatUnicode(String rawBoard, String boardSquareFormat) {
         StringBuilder unicodeBoard = new StringBuilder();
 
         String[] boardLines = rawBoard.split("\\R");
-        String[] boardFormatLines = BOARD_SQUARE_FORMAT.split("\\R");
+        String[] boardFormatLines = boardSquareFormat.split("\\R");
         // Iterate over each row, tracking row position
         for (int rowPos = 0; rowPos < boardLines.length; rowPos++) {
             String boardLine = boardLines[rowPos];
@@ -129,16 +167,15 @@ public class BoardRenderer {
             for (int j = 0; j < boardLine.length(); j++) {
                 // Track the column position based on the board square width
                 int colPos = j / BOARD_SQUARE_WIDTH;
-                // If it's one of moveOptions' start or end positions, give it a special color
-                if (moveOptions != null) {
-                    // TODO: Implement special square rendering for move options
-                }
                 // If it's the start of a new square, set the background color.
                 if (j % BOARD_SQUARE_WIDTH == 0) {
                     switch (boardFormatLines[rowPos].charAt(colPos)) {
                         case 'x' -> unicodeBoard.append(EscapeSequences.SET_BG_COLOR_DARK_GREEN);
                         case 'l' -> unicodeBoard.append(EscapeSequences.SET_BG_COLOR_LIGHT_GREY);
                         case 'd' -> unicodeBoard.append(EscapeSequences.SET_BG_COLOR_DARK_GREY);
+                        case 'L' -> unicodeBoard.append(EscapeSequences.SET_BG_COLOR_BLUE);
+                        case 'D' -> unicodeBoard.append(EscapeSequences.SET_BG_COLOR_DARK_BLUE);
+                        case 'o' -> unicodeBoard.append(EscapeSequences.SET_BG_COLOR_MAGENTA);
                     }
                 }
 
