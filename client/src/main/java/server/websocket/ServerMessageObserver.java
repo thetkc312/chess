@@ -1,6 +1,9 @@
 package server.websocket;
 
 import com.google.gson.Gson;
+import model.GameData;
+import ui.BoardRenderer;
+import ui.ConsolePrinter;
 import websocket.messages.ServerMessage;
 import websocket.messages.ServerLoadGameMessage;
 import websocket.messages.ServerErrorMessage;
@@ -11,12 +14,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class ServerMessageObserver {
 
-    private final BlockingQueue<String> blockingQueue = new LinkedBlockingQueue<>();
     private static final Gson SERIALIZER = new Gson();
+
+    private final BlockingQueue<String> blockingQueue = new LinkedBlockingQueue<>();
+    private final ActiveGameTracker activeGameTracker;
 
     private volatile boolean running = true;
 
-    public ServerMessageObserver() {
+    public ServerMessageObserver(ActiveGameTracker activeGameTracker) {
+        this.activeGameTracker = activeGameTracker;
     }
 
     public void registerServerMessage(String wsMessageJson) {
@@ -48,14 +54,37 @@ public class ServerMessageObserver {
     }
 
     private void processLoadGame(ServerLoadGameMessage loadGameMessage) {
-        // TODO: Implement load_game rendering
+        GameData gameData = loadGameMessage.getGame();
+        String result = formatGameData(gameData);
+        result += "\n";
+        result += BoardRenderer.renderBoard(gameData.game(), activeGameTracker.getUserTeam());
+        ConsolePrinter.safePrint(result);
     }
 
     private void processError(ServerErrorMessage errorMessage) {
-        // TODO: Implement error rendering
+        String result = errorMessage.getErrorMessage();
+        ConsolePrinter.safePrint(result);
     }
 
     private void processNotification(ServerNotificationMessage notificationMessage) {
-        // TODO: Implement notification rendering
+        String result = notificationMessage.getMessage();
+        ConsolePrinter.safePrint(result);
+    }
+
+    private String formatGameData(GameData gameData) {
+        String uiGameData = "";
+        uiGameData += gameData.gameName();
+        uiGameData += ": White Team - ";
+        uiGameData += representPlayerName(gameData.whiteUsername());
+        uiGameData += " | Black Team - ";
+        uiGameData += representPlayerName(gameData.blackUsername());
+        return uiGameData;
+    }
+
+    private String representPlayerName(String playerName) {
+        if (playerName == null) {
+            return "_____";
+        }
+        return playerName;
     }
 }
