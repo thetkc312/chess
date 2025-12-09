@@ -1,5 +1,6 @@
 package ui.client;
 
+import chess.ChessMove;
 import chess.ChessPosition;
 import endpointresponses.GameListResponse;
 import model.GameData;
@@ -89,22 +90,39 @@ public class GameplayClient {
     }
 
     private EvalResult leave() throws IOException {
-        // TODO: Implement rendering leave results with WS communication to leave game and update others
         webSocketFacade.leaveGame();
         webSocketFacade = null;
         serverMessageObserver.stop();
         return new EvalResult("", ClientStates.POSTLOGIN);
     }
 
-    private EvalResult move(String[] params) {
-        // TODO: Implement rendering move results with WS communication to perform move and update others
-        // Update chessGameLatestVersion;
-        webSocketFacade.moveInGame();
-        return new EvalResult("", MY_STATE);
+    private EvalResult move(String[] params) throws IOException {
+        try {
+            if (params.length != 2) {
+                throw new ResponseException(StatusReader.ResponseStatus.BAD_REQUEST, "Incorrect number of input parameters");
+            }
+
+            ChessPosition startPosition = ChessPosition.positionFromFileRank(params[0]);
+            ChessPosition endPosition = ChessPosition.positionFromFileRank(params[1]);
+            // TODO: Implement piece promoting
+            ChessMove move = new ChessMove(startPosition, endPosition, null);
+
+            webSocketFacade.moveInGame(move);
+            return new EvalResult("", MY_STATE);
+
+        } catch (IllegalArgumentException|ResponseException e) {
+            String result = "There was an issue while trying show the legal moves for a piece.";
+            result += """
+            \nBe sure to request to show the legal moves for a piece as follows:
+            \tshow <file><rank> - watch a game as a spectator
+            \t\ti.e. show a1
+            
+            """;
+            return new EvalResult(result, MY_STATE);
+        }
     }
 
     private EvalResult resign() throws IOException {
-        // TODO: Implement rendering resign results with WS communication to resign game and update others
         webSocketFacade.forfeitGame();
         return new EvalResult("", MY_STATE);
     }

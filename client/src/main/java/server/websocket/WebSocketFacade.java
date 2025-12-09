@@ -1,9 +1,11 @@
 package server.websocket;
 
+import chess.ChessMove;
 import com.google.gson.Gson;
 import jakarta.websocket.*;
 import model.AuthData;
 import websocket.commands.UserGameCommand;
+import websocket.commands.UserMoveCommand;
 
 import java.io.IOException;
 import java.net.URI;
@@ -51,9 +53,9 @@ public class WebSocketFacade extends Endpoint {
 
     }
 
-    public void moveInGame() {
-        // TODO: Implement sending move message with WS communication to perform move and update others
-
+    public void moveInGame(ChessMove move) throws IOException {
+        UserMoveCommand moveCommand = new UserMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authData.authToken(), activeGameTracker.getGameID(), move);
+        session.getBasicRemote().sendText(SERIALIZER.toJson(moveCommand));
     }
 
     public void forfeitGame() throws IOException {
