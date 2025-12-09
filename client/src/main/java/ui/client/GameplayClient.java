@@ -10,8 +10,10 @@ import server.websocket.ActiveGameTracker;
 import server.websocket.ServerMessageObserver;
 import server.websocket.WebSocketFacade;
 import ui.BoardRenderer;
+import ui.ConsolePrinter;
 import ui.states.ClientStates;
 
+import java.io.IOException;
 import java.net.ConnectException;
 
 public class GameplayClient {
@@ -26,7 +28,7 @@ public class GameplayClient {
     public GameplayClient(ServerFacade serverFacade, ActiveGameTracker activeGameTracker) {
         this.serverFacade = serverFacade;
         this.activeGameTracker = activeGameTracker;
-        this.serverMessageObserver = new ServerMessageObserver();
+        this.serverMessageObserver = new ServerMessageObserver(activeGameTracker);
     }
 
     public void startWebSocket() throws ConnectException {
@@ -47,15 +49,20 @@ public class GameplayClient {
         if (activeGameTracker.getUserRole() == null) {
             throw new ConnectException("In order to start the Gameplay Client, the activeGameTracker must be updated to reflect the role of the player in their game.");
         }
-        return switch (cmd) {
-            case "help", "h" -> help();
-            case "redraw", "r" -> redraw();
-            case "leave", "l" -> leave();
-            case "move", "m" -> move(params);
-            case "resign" -> resign();
-            case "show", "s" -> show(params);
-            default -> help();
-        };
+        try {
+            return switch (cmd) {
+                case "help", "h" -> help();
+                case "redraw", "r" -> redraw();
+                case "leave", "l" -> leave();
+                case "move", "m" -> move(params);
+                case "resign" -> resign();
+                case "show", "s" -> show(params);
+                default -> help();
+            };
+        } catch (IOException ignore) {
+            ConsolePrinter.safePrint("There was an error sending your action to the server, please try again later.\n");
+            return help();
+        }
     }
 
     private EvalResult help() {
@@ -81,7 +88,7 @@ public class GameplayClient {
         return new EvalResult(result, MY_STATE);
     }
 
-    private EvalResult leave() {
+    private EvalResult leave() throws IOException {
         // TODO: Implement rendering leave results with WS communication to leave game and update others
         webSocketFacade.leaveGame();
         webSocketFacade = null;
@@ -96,7 +103,7 @@ public class GameplayClient {
         return new EvalResult("", MY_STATE);
     }
 
-    private EvalResult resign() {
+    private EvalResult resign() throws IOException {
         // TODO: Implement rendering resign results with WS communication to resign game and update others
         webSocketFacade.forfeitGame();
         return new EvalResult("", MY_STATE);

@@ -3,10 +3,14 @@ package server.websocket;
 import com.google.gson.Gson;
 import jakarta.websocket.*;
 import model.AuthData;
+import websocket.commands.UserGameCommand;
 
+import java.io.IOException;
 import java.net.URI;
 
 public class WebSocketFacade extends Endpoint {
+
+    private static final Gson SERIALIZER = new Gson();
 
     private final Session session;
     private final ServerMessageObserver serverMessageObserver;
@@ -36,12 +40,14 @@ public class WebSocketFacade extends Endpoint {
 
     }
 
-    public void connectGame() {
-        // TODO: Implement sending connect message with WS communication to leave game and update others
+    public void connectGame() throws IOException {
+        UserGameCommand connectCommand = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authData.authToken(), activeGameTracker.getGameID());
+        session.getBasicRemote().sendText(SERIALIZER.toJson(connectCommand));
     }
 
-    public void leaveGame() {
-        // TODO: Implement sending leave message with WS communication to leave game and update others
+    public void leaveGame() throws IOException {
+        UserGameCommand leaveCommand = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authData.authToken(), activeGameTracker.getGameID());
+        session.getBasicRemote().sendText(SERIALIZER.toJson(leaveCommand));
 
     }
 
@@ -50,8 +56,8 @@ public class WebSocketFacade extends Endpoint {
 
     }
 
-    public void forfeitGame() {
-        // TODO: Implement sending resign message with WS communication to resign game and update others
-
+    public void forfeitGame() throws IOException {
+        UserGameCommand forfeitCommand = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authData.authToken(), activeGameTracker.getGameID());
+        session.getBasicRemote().sendText(SERIALIZER.toJson(forfeitCommand));
     }
 }
